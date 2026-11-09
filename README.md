@@ -31,17 +31,20 @@ Sebelum menulis atau memodifikasi kode, seluruh anggota tim (3 Fullstack Develop
 - [Architecture Decisions & Patterns](./docs/architect.md)
 - [Technical Specifications & Database Schema](./docs/tech-spec.md)
 - [Team Collaboration & Workflow (3 Developers)](./docs/team-workflow.md)
+- [AI Agent Boundaries & Role Governance](./docs/agent-boundaries.md)
 - [Pending Changelog](./docs/changelog/pending.md)
 
 ---
 
 ## 4. Pembagian Tim (3 Fullstack Developers)
 
-| Developer | Domain Fokus | Lokasi Modul Utama |
-| :--- | :--- | :--- |
-| **Developer 1** | Core Auth, Onboarding UMKM, Smart POS & Inventori | `src/app/(auth)/`, `src/app/(dashboard)/operational/` |
-| **Developer 2** | Direktori Ekonomi Kreatif, Storefront Publik & Order | `src/app/(market)/`, `src/app/(dashboard)/orders/` |
-| **Developer 3** | Buku Kas Keuangan, Laba-Rugi & Analitik Optimasi Bisnis | `src/app/(dashboard)/management/` |
+| Developer | Akun GitHub | Domain Fokus | Lokasi Modul Utama |
+| :--- | :--- | :--- | :--- |
+| **Developer 1** (Lead) | [@oktaamyid](https://github.com/oktaamyid) | Core Auth, Onboarding UMKM, Smart POS & Inventori | `src/app/(auth)/`, `src/app/(dashboard)/operational/` |
+| **Developer 2** | [@pompomv](https://github.com/pompomv) | Direktori Ekonomi Kreatif, Storefront Publik & Order | `src/app/(market)/`, `src/app/(dashboard)/orders/` |
+| **Developer 3** | [@wildanfarizy](https://github.com/wildanfarizy) | Buku Kas Keuangan, Laba-Rugi & Analitik Optimasi Bisnis | `src/app/(dashboard)/management/` |
+
+> *Setiap AI Agent yang membantu masing-masing developer wajib mematuhi batasan file dan folder di [docs/agent-boundaries.md](./docs/agent-boundaries.md).*
 
 ---
 

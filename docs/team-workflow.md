@@ -7,13 +7,16 @@ Dokumen ini mengatur pembagian peran, kepemilikan file (*file ownership*), alur 
 
 ## 1. Pembagian Peran & Domain Fitur (3 Fullstack Developers)
 
-Setiap anggota tim bertanggung jawab penuh secara **End-to-End (Database Schema → Zod Validation → Server Actions → UI Components)** pada domain masing-masing:
+Setiap anggota tim bertanggung jawab penuh secara **End-to-End (Database Schema → Zod Validation → Server Actions → UI Components)** pada domain masing-masing.
 
-| Anggota Tim | Domain Tanggung Jawab | Fokus Modul Utama | Area Direktori & File Ownership |
-| :--- | :--- | :--- | :--- |
-| **Developer 1**<br>*(Core & Operational Lead)* | **Digitalisasi Operasional UMKM** | • Setup Supabase Auth & Onboarding Toko<br>• CRUD Produk, Kategori, & Upload Foto<br>• Mutasi Stok & Low-Stock Alert<br>• Kasir Pintar (Smart POS) & Struk Digital | • `src/app/(auth)/**`<br>• `src/app/(dashboard)/operational/**`<br>• `src/components/operational/**`<br>• `src/lib/db/schema/core.ts` & `operational.ts`<br>• `src/lib/schemas/operational.schema.ts` |
-| **Developer 2**<br>*(Market Access & Storefront Lead)* | **Akses Pasar & Ekonomi Kreatif** | • Landing Page & Direktori Eksplorasi UMKM (`/explore`)<br>• Micro-Storefront Publik (`/store/[slug]`)<br>• Keranjang Belanja & Checkout WhatsApp<br>• Pipeline Pesanan Masuk & Kupon Promo | • `src/app/(market)/**`<br>• `src/app/(dashboard)/orders/**`<br>• `src/components/market/**`<br>• `src/lib/db/schema/market.ts`<br>• `src/lib/schemas/market.schema.ts` |
-| **Developer 3**<br>*(Business Management & Analytics Lead)* | **Optimasi Manajemen Bisnis** | • Buku Kas Keuangan (Pemasukan & Beban Operasional)<br>• Kalkulasi Laba Kotor (HPP) & Laba Bersih<br>• Dashboard Analitik Penjualan & Grafik Tren<br>• Deteksi *Fast-Moving*, *Deadstock*, & Rekomendasi Restock | • `src/app/(dashboard)/management/**`<br>• `src/components/management/**`<br>• `src/lib/db/schema/management.ts`<br>• `src/lib/schemas/management.schema.ts` |
+> [!IMPORTANT]
+> Kontrak batasan teknis dan panduan instruksi untuk AI Agent pendamping masing-masing developer diatur secara ketat di dokumen **[docs/agent-boundaries.md](./agent-boundaries.md)**.
+
+| Anggota Tim | Akun GitHub | Domain Tanggung Jawab | Fokus Modul Utama | Area Direktori & File Ownership |
+| :--- | :--- | :--- | :--- | :--- |
+| **Developer 1**<br>*(Tech Lead & Operational Lead)* | **User (`@oktaamyid`)**<br>[github.com/oktaamyid](https://github.com/oktaamyid) | **Domain 1: Digitalisasi Operasional UMKM** | • Setup Supabase Auth & Onboarding Toko<br>• CRUD Produk, Kategori, & Upload Foto<br>• Mutasi Stok & Low-Stock Alert<br>• Kasir Pintar (Smart POS) & Struk Digital | • `src/app/(auth)/**`<br>• `src/app/(dashboard)/operational/**`<br>• `src/components/operational/**`<br>• `src/lib/db/schema/core.ts` & `operational.ts`<br>• `src/lib/schemas/operational.schema.ts` |
+| **Developer 2**<br>*(Market Access & Storefront Lead)* | **`@pompomv`**<br>[github.com/pompomv](https://github.com/pompomv) | **Domain 2: Akses Pasar & Ekonomi Kreatif** | • Landing Page & Direktori Eksplorasi UMKM (`/explore`)<br>• Micro-Storefront Publik (`/store/[slug]`)<br>• Keranjang Belanja & Checkout WhatsApp<br>• Pipeline Pesanan Masuk & Kupon Promo | • `src/app/(market)/**`<br>• `src/app/(dashboard)/orders/**`<br>• `src/components/market/**`<br>• `src/lib/db/schema/market.ts`<br>• `src/lib/schemas/market.schema.ts` |
+| **Developer 3**<br>*(Business Management & Analytics Lead)* | **`@wildanfarizy`**<br>[github.com/wildanfarizy](https://github.com/wildanfarizy) | **Domain 3: Optimasi Manajemen Bisnis** | • Buku Kas Keuangan (Pemasukan & Beban Operasional)<br>• Kalkulasi Laba Kotor (HPP) & Laba Bersih<br>• Dashboard Analitik Penjualan & Grafik Tren<br>• Deteksi *Fast-Moving*, *Deadstock*, & Rekomendasi Restock | • `src/app/(dashboard)/management/**`<br>• `src/components/management/**`<br>• `src/lib/db/schema/management.ts`<br>• `src/lib/schemas/management.schema.ts` |
 
 > **Catatan File Bersama (`Shared Files`)**:
 > Perubahan pada `src/lib/db/index.ts`, `src/app/(dashboard)/layout.tsx`, atau instalasi library di `package.json` wajib dikomunikasikan di grup tim sebelum melakukan merge ke `staging`.
