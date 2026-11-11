@@ -1,6 +1,29 @@
 import { z } from "zod";
 
 /**
+ * Skema validasi untuk login merchant (Domain 1).
+ */
+export const loginSchema = z.object({
+  email: z.string().trim().email("Format email tidak valid"),
+  password: z.string().min(6, "Password minimal 6 karakter"),
+});
+
+/**
+ * Skema validasi untuk registrasi merchant baru (Domain 1).
+ */
+export const registerSchema = z
+  .object({
+    fullName: z.string().trim().min(3, "Nama lengkap minimal 3 karakter"),
+    email: z.string().trim().email("Format email tidak valid"),
+    password: z.string().min(6, "Password minimal 6 karakter"),
+    confirmPassword: z.string().min(6, "Konfirmasi password minimal 6 karakter"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Konfirmasi password tidak cocok",
+    path: ["confirmPassword"],
+  });
+
+/**
  * Skema validasi untuk pendaftaran / onboarding toko UMKM baru (Domain 1).
  */
 export const storeOnboardingSchema = z.object({
@@ -122,6 +145,8 @@ export const posCheckoutSchema = z.object({
     .min(1, "Keranjang kasir tidak boleh kosong"),
 });
 
+export type LoginInput = z.infer<typeof loginSchema>;
+export type RegisterInput = z.infer<typeof registerSchema>;
 export type StoreOnboardingInput = z.infer<typeof storeOnboardingSchema>;
 export type UpsertProductInput = z.infer<typeof upsertProductSchema>;
 export type AdjustStockInput = z.infer<typeof adjustStockSchema>;
