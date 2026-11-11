@@ -7,6 +7,7 @@ import { RecordExpenseDialog } from "@/components/management/RecordExpenseDialog
 import { FinanceMetricsCards } from "@/components/management/FinanceMetricsCards";
 import { FinancialTransactionsTable } from "@/components/management/FinancialTransactionsTable";
 import { ExpenseBreakdownCard } from "@/components/management/ExpenseBreakdownCard";
+import { ExportFinanceReportButton } from "@/components/management/ExportFinanceReportButton";
 import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -56,7 +57,14 @@ export default async function FinancePage() {
           </p>
         </div>
 
-        <div>
+        <div className="flex items-center gap-2">
+          <ExportFinanceReportButton
+            storeName={storeName}
+            entries={recentTransactions}
+            totalIncome={summary.totalIncome}
+            totalExpense={summary.totalExpense}
+            netProfit={summary.netProfit}
+          />
           <RecordExpenseDialog storeId={storeId} />
         </div>
       </div>
