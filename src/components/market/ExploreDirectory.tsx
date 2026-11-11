@@ -3,7 +3,14 @@
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Search, MapPin, Store as StoreIcon, Sparkles, Package, ArrowRight } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  Store as StoreIcon,
+  Package,
+  ArrowRight,
+  SlidersHorizontal,
+} from "lucide-react";
 import { type StoreWithProductCount } from "@/app/(market)/actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -37,10 +44,10 @@ export function ExploreDirectory({ initialStores }: ExploreDirectoryProps) {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams(searchParams.toString());
-    if (searchTerm) params.set("q", searchTerm);
+    if (searchTerm.trim()) params.set("q", searchTerm.trim());
     else params.delete("q");
 
-    if (cityFilter) params.set("city", cityFilter);
+    if (cityFilter.trim()) params.set("city", cityFilter.trim());
     else params.delete("city");
 
     startTransition(() => {
@@ -60,48 +67,65 @@ export function ExploreDirectory({ initialStores }: ExploreDirectoryProps) {
     });
   };
 
+  const clearFilters = () => {
+    setSearchTerm("");
+    setCityFilter("");
+    startTransition(() => {
+      router.push("/explore");
+    });
+  };
+
+  const hasActiveFilters =
+    Boolean(searchTerm.trim()) ||
+    Boolean(cityFilter.trim()) ||
+    currentSubsector !== "all";
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Search & Filter Bar */}
-      <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm space-y-4">
+      <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-4">
         <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-12 gap-3">
           <div className="sm:col-span-6 relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Cari toko atau produk ekonomi kreatif..."
+              placeholder="Cari toko atau produk lokal..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 h-10"
+              className="pl-9 h-10 text-xs sm:text-sm"
             />
           </div>
           <div className="sm:col-span-4 relative">
             <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Kota / Daerah (contoh: Bandung, Sleman)..."
+              placeholder="Kota / Kabupaten (contoh: Yogyakarta)..."
               value={cityFilter}
               onChange={(e) => setCityFilter(e.target.value)}
-              className="pl-9 h-10"
+              className="pl-9 h-10 text-xs sm:text-sm"
             />
           </div>
           <div className="sm:col-span-2">
-            <Button type="submit" disabled={isPending} className="w-full h-10 font-medium">
-              {isPending ? "Mencari..." : "Temukan"}
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="w-full h-10 text-xs sm:text-sm font-semibold"
+            >
+              {isPending ? "Mencari..." : "Terapkan"}
             </Button>
           </div>
         </form>
 
         {/* Subsector Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none text-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
           {SUBSECTORS.map((item) => {
             const isActive = currentSubsector === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => handleSelectSubsector(item.id)}
-                className={`px-3 py-1.5 rounded-full whitespace-nowrap transition-colors font-medium ${
+                className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors font-medium ${
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-foreground text-background font-bold"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {item.label}
@@ -111,75 +135,106 @@ export function ExploreDirectory({ initialStores }: ExploreDirectoryProps) {
         </div>
       </div>
 
+      {/* Info Status Filter */}
+      <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+        <span>
+          Menampilkan <strong>{initialStores.length}</strong> pelaku usaha kreatif
+        </span>
+        {hasActiveFilters && (
+          <button
+            onClick={clearFilters}
+            className="text-primary hover:underline font-semibold"
+          >
+            Reset Semua Filter
+          </button>
+        )}
+      </div>
+
       {/* Directory Grid */}
       {initialStores.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-12 text-center bg-card/50">
-          <StoreIcon className="h-10 w-10 mx-auto text-muted-foreground mb-3 opacity-60" />
-          <h3 className="font-semibold text-base">Belum Ada UMKM Ditemukan</h3>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto mt-1">
-            Belum ada toko yang sesuai dengan kriteria pencarian Anda. Coba ubah kata kunci atau pilih subsektor lainnya.
+        <div className="rounded-xl border border-dashed p-12 text-center bg-card">
+          <StoreIcon className="h-10 w-10 mx-auto text-muted-foreground mb-3 opacity-30" />
+          <h3 className="font-bold text-base">Belum Ada Usaha yang Cocok</h3>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 leading-relaxed">
+            Tidak menemukan UMKM dengan kriteria pencarian saat ini. Silakan coba kata kunci lain atau bersihkan filter.
           </p>
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearFilters}
+              className="mt-4 text-xs"
+            >
+              Tampilkan Semua Toko
+            </Button>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {initialStores.map((store) => (
             <Link
               key={store.id}
               href={`/store/${store.slug}`}
-              className="group rounded-xl border bg-card overflow-hidden hover:shadow-md transition-all hover:border-primary/50 flex flex-col justify-between"
+              className="group rounded-xl border bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between"
             >
               <div>
-                {/* Store Cover / Banner */}
-                <div className="h-32 bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/20 relative flex items-center justify-center p-4">
+                {/* Banner Sampul */}
+                <div className="h-32 bg-muted relative flex items-center justify-center overflow-hidden">
                   {store.bannerUrl ? (
                     <img
                       src={store.bannerUrl}
-                      alt={store.name}
-                      className="w-full h-full object-cover absolute inset-0"
+                      alt={`Sampul ${store.name}`}
+                      className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-200"
                     />
                   ) : (
-                    <div className="flex items-center gap-2 text-primary/40 font-semibold text-lg">
-                      <Sparkles className="h-5 w-5" />
-                      <span>{store.name}</span>
+                    <div className="font-bold text-xs uppercase text-muted-foreground tracking-wider">
+                      {store.name}
                     </div>
                   )}
-                  <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-medium border shadow-xs">
-                    {store.subsector.toUpperCase()}
+                  <div className="absolute top-3 right-3 bg-background/90 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border">
+                    {store.subsector}
                   </div>
                 </div>
 
-                {/* Store Body */}
-                <div className="p-5 space-y-3">
+                {/* Profil Usaha */}
+                <div className="p-4 space-y-2.5">
                   <div className="flex items-start gap-3">
-                    <div className="h-11 w-11 rounded-lg border bg-background shadow-xs flex items-center justify-center text-primary font-bold text-lg shrink-0 overflow-hidden">
+                    <div className="h-10 w-10 rounded-lg border bg-background flex items-center justify-center text-primary font-bold text-base shrink-0 overflow-hidden">
                       {store.logoUrl ? (
-                        <img src={store.logoUrl} alt={store.name} className="h-full w-full object-cover" />
+                        <img
+                          src={store.logoUrl}
+                          alt={store.name}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         store.name.charAt(0).toUpperCase()
                       )}
                     </div>
-                    <div>
-                      <h3 className="font-bold text-base leading-tight group-hover:text-primary transition-colors">
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-base leading-tight truncate group-hover:text-primary transition-colors">
                         {store.name}
                       </h3>
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
-                        <MapPin className="h-3.5 w-3.5" />
-                        <span>{store.city}</span>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{store.city}</span>
                       </div>
                     </div>
                   </div>
 
                   <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                    {store.description || "UMKM Ekonomi Kreatif terpercaya dengan karya & produk lokal berkualitas."}
+                    {store.description ||
+                      "Pelaku usaha ekonomi kreatif lokal dengan produk berkualitas dan berdaya saing."}
                   </p>
                 </div>
               </div>
 
-              {/* Store Footer */}
-              <div className="px-5 py-3 border-t bg-muted/20 flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  <Package className="h-3.5 w-3.5 text-primary" />
-                  <strong className="text-foreground">{store.productCount}</strong> produk aktif
+              {/* Footer Kartu */}
+              <div className="px-4 py-3 border-t bg-muted/20 flex items-center justify-between text-xs">
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <Package className="h-3.5 w-3.5" />
+                  <span>
+                    <strong>{store.productCount}</strong> produk aktif
+                  </span>
                 </span>
                 <span className="inline-flex items-center gap-1 font-semibold text-primary group-hover:translate-x-0.5 transition-transform">
                   Kunjungi Toko <ArrowRight className="h-3 w-3" />
@@ -192,4 +247,3 @@ export function ExploreDirectory({ initialStores }: ExploreDirectoryProps) {
     </div>
   );
 }
-
