@@ -9,7 +9,7 @@ export default function OnboardingPage() {
         <div className="text-center space-y-2">
           <Link href="/" className="inline-flex items-center gap-2 font-bold text-xl text-primary justify-center">
             <Store className="h-6 w-6" />
-            <span>Logicodix</span>
+            <span>Niagarupa</span>
           </Link>
           <div className="pt-2">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-2">

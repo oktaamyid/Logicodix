@@ -1,13 +1,15 @@
 # Product Requirements Document (PRD)
-## Project: Logicodix — Local MSME & Creative Economy Hub
+## Product: Niagarupa
+### Event: Logicodix — Track: Local MSME & Creative Economy Hub
 
 | Metadata | Detail |
 | :--- | :--- |
-| **Nama Produk** | **Logicodix** (Platform All-in-One UMKM & Ekonomi Kreatif Lokal) |
+| **Nama Produk** | **Niagarupa** (*Karya Berdaya, Niaga Tertata*) |
+| **Ajang / Event** | Logicodix — Local MSME & Creative Economy Hub |
 | **Tema** | Local MSME & Creative Economy: Digitalisasi Operasional, Akses Pasar, & Optimasi Manajemen Bisnis |
 | **Tim Pengembang** | 3 Fullstack Developers (Domain-Driven Split) |
 | **Tech Stack** | Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui, Supabase (PostgreSQL, Auth, Storage), Drizzle ORM, Zod |
-| **Status Dokumen** | v1.0.0 — Phase 0 (Initiation) |
+| **Status Dokumen** | v1.1.0 — Active Development |
 
 ---
 
@@ -23,10 +25,10 @@ Pelaku UMKM (Usaha Mikro, Kecil, dan Menengah) serta pelaku Ekonomi Kreatif loka
 
 ## 2. Solusi Produk (Product Vision)
 
-**Logicodix** adalah platform SaaS & Direktori Terpadu (*All-in-One UMKM Hub*) yang menghubungkan **3 pilar utama** dalam satu ekosistem real-time:
+**Niagarupa** adalah platform SaaS & Direktori Terpadu (*Creative-Commerce & Local MSME Hub*) yang menghubungkan **3 pilar utama** dalam satu ekosistem real-time:
 
 1. **Pilar 1 — Digitalisasi Operasional (Smart POS & Inventory)**: Sistem Kasir (Point of Sale) responsif dan manajemen inventori otomatis (produk, varian, stok, pengingat stok menipis, & riwayat mutasi).
-2. **Pilar 2 — Akses Pasar (Digital Storefront & Local Creative Directory)**: Pembuatan halaman katalog toko mikro (*micro-storefront* `logicodix.id/toko/[slug]`) otomatis dari data inventori, terintegrasi dengan Direktori Pasar Kreatif Lokal, keranjang belanja, dan checkout langsung (WhatsApp Order / Payment Link).
+2. **Pilar 2 — Akses Pasar (Digital Storefront & Local Creative Directory)**: Pembuatan halaman katalog toko mikro (*micro-storefront* `niagarupa.id/store/[slug]`) otomatis dari data inventori, terintegrasi dengan Direktori Pasar Kreatif Lokal, keranjang belanja, dan checkout langsung (WhatsApp Order / Payment Link).
 3. **Pilar 3 — Optimasi Manajemen Bisnis (Financial Ledger & Business Intelligence)**: Pencatatan keuangan otomatis dari transaksi POS & online, manajemen beban operasional (pengeluaran), metrik kesehatan bisnis, produk terlaris, dan rekomendasi optimasi stok/harga.
 
 ---

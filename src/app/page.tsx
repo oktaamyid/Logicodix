@@ -9,7 +9,7 @@ export default function HomePage() {
         <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight text-primary">
             <Store className="h-6 w-6" />
-            <span>Logicodix</span>
+            <span>Niagarupa</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
@@ -59,7 +59,7 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Tinggalkan catatan kertas dan aplikasi kasir terpisah. Logicodix menyinkronkan transaksi kasir harian, katalog toko online, hingga laporan laba-rugi otomatis tanpa rumus manual.
+              Tinggalkan catatan kertas dan aplikasi kasir terpisah. <strong className="text-foreground font-semibold">Niagarupa</strong> menyinkronkan transaksi kasir harian, katalog toko online, hingga laporan laba-rugi otomatis tanpa rumus manual.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -180,8 +180,9 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t py-6 text-center text-xs text-muted-foreground">
-        <div className="container mx-auto px-4">
-          <p>© {new Date().getFullYear()} Logicodix — Digitalisasi UMKM & Ekonomi Kreatif Lokal.</p>
+        <div className="container mx-auto px-4 space-y-1">
+          <p>© {new Date().getFullYear()} <strong>Niagarupa</strong> — Karya Berdaya, Niaga Tertata.</p>
+          <p className="text-[11px] text-muted-foreground/75">Dikembangkan untuk ajang Logicodix — Local MSME & Creative Economy Hub.</p>
         </div>
       </footer>
     </div>

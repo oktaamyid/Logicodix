@@ -1,6 +1,7 @@
-# Logicodix — Local MSME & Creative Economy Hub
+# Niagarupa — Platform Digitalisasi UMKM & Ekonomi Kreatif Lokal
+> **Event**: Logicodix | **Track**: Local MSME & Creative Economy Hub
 
-**Logicodix** adalah platform *All-in-One* untuk **Digitalisasi Operasional UMKM Lokal, Akses Pasar Ekonomi Kreatif, dan Optimasi Manajemen Bisnis**.
+**Niagarupa** (*Karya Berdaya, Niaga Tertata*) adalah platform *All-in-One* untuk **Digitalisasi Operasional UMKM Lokal, Akses Pasar Ekonomi Kreatif, dan Optimasi Manajemen Bisnis**.
 
 ---
 

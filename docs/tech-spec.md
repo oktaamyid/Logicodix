@@ -1,5 +1,5 @@
 # Technical Specifications (`tech-spec.md`)
-## Project: Logicodix — Local MSME & Creative Economy Hub
+## Product: Niagarupa (Event: Logicodix — Local MSME & Creative Economy Hub)
 
 ---
 

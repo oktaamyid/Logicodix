@@ -9,9 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Logicodix — Platform Terpadu Digitalisasi UMKM & Ekonomi Kreatif Lokal",
+  title: "Niagarupa — Platform Terpadu Digitalisasi UMKM & Ekonomi Kreatif Lokal",
   description:
-    "Solusi All-in-One: Digitalisasi Operasional (POS & Inventori), Akses Pasar (Katalog & Direktori Kreatif), dan Optimasi Manajemen Bisnis.",
+    "Karya Berdaya, Niaga Tertata. Solusi All-in-One: Digitalisasi Operasional (POS & Inventori), Akses Pasar (Katalog & Direktori Kreatif), dan Optimasi Manajemen Bisnis.",
 };
 
 export default function RootLayout({

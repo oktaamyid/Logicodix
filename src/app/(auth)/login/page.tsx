@@ -9,7 +9,7 @@ export default function LoginPage() {
         <div className="text-center space-y-2">
           <Link href="/" className="inline-flex items-center gap-2 font-bold text-xl text-primary justify-center">
             <Store className="h-6 w-6" />
-            <span>Logicodix</span>
+            <span>Niagarupa</span>
           </Link>
           <h1 className="text-2xl font-bold tracking-tight">Masuk ke Toko Anda</h1>
           <p className="text-sm text-muted-foreground">

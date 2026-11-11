@@ -24,7 +24,7 @@ export default function DashboardLayout({
       <aside className="w-64 border-r bg-card flex flex-col shrink-0">
         <div className="h-16 border-b flex items-center px-6 gap-2 font-bold text-lg text-primary">
           <Store className="h-5 w-5" />
-          <span>Logicodix Hub</span>
+          <span>Niagarupa Hub</span>
         </div>
 
         <nav className="flex-1 overflow-y-auto p-4 space-y-6 text-sm">

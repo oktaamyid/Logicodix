@@ -1,5 +1,5 @@
 # Architecture Decisions & Patterns (`architect.md`)
-## Project: Logicodix — Local MSME & Creative Economy Hub
+## Product: Niagarupa (Event: Logicodix — Local MSME & Creative Economy Hub)
 
 Dokumen ini merupakan acuan arsitektur tunggal (*Single Source of Truth*) untuk tim pengembang (3 Fullstack Developers). Seluruh kode wajib mematuhi pola dan batasan yang ditetapkan di sini.
 

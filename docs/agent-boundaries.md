@@ -1,5 +1,5 @@
 # AI Agent Boundary & Role Governance (`agent-boundaries.md`)
-## Project: Logicodix — Local MSME & Creative Economy Hub
+## Product: Niagarupa (Event: Logicodix — Local MSME & Creative Economy Hub)
 
 > [!IMPORTANT]
 > **MANDATORY INSTRUCTION FOR ALL AI AGENTS & CODING ASSISTANTS**:

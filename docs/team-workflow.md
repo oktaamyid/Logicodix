@@ -1,5 +1,5 @@
 # Team Collaboration & Workflow Guide (`team-workflow.md`)
-## Project: Logicodix — 3 Fullstack Developers Squad
+## Product: Niagarupa (Event: Logicodix — Local MSME & Creative Economy Hub)
 
 Dokumen ini mengatur pembagian peran, kepemilikan file (*file ownership*), alur kerja Git, dan jadwal Sprint untuk **3 orang Fullstack Developer** agar pengembangan paralel berjalan cepat tanpa konflik kode (*merge conflict*).
 

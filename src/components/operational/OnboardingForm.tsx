@@ -111,7 +111,7 @@ export function OnboardingForm() {
             Alamat Tautan Katalog Publik <span className="text-destructive">*</span>
           </label>
           <span className="text-[11px] text-muted-foreground font-mono">
-            logicodix.id/store/{slug || "slug-toko"}
+            niagarupa.id/store/{slug || "slug-toko"}
           </span>
         </div>
         <Input
