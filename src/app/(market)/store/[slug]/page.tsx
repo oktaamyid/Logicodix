@@ -1,3 +1,7 @@
+import { notFound } from "next/navigation";
+import { getStoreBySlugAction } from "@/app/(market)/actions";
+import { StorefrontView } from "@/components/market/StorefrontView";
+
 interface StorefrontPageProps {
   params: Promise<{ slug: string }>;
 }
@@ -5,14 +9,30 @@ interface StorefrontPageProps {
 export default async function StorefrontPage({ params }: StorefrontPageProps) {
   const { slug } = await params;
 
+  const result = await getStoreBySlugAction(slug);
+
+  if (!result.success || !result.data) {
+    notFound();
+  }
+
+  const { store, products, vouchers } = result.data;
+
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-8 max-w-5xl space-y-6">
-        <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground bg-card">
-          Micro-Storefront Toko: <span className="font-semibold text-foreground">{slug}</span>
-          <p className="mt-2 text-xs">Area Kerja Storefront Publik & Keranjang Belanja — PIC: Developer 2 (@pompomv)</p>
-        </div>
-      </main>
-    </div>
+    <StorefrontView
+      store={{
+        id: store.id,
+        name: store.name,
+        slug: store.slug,
+        subsector: store.subsector,
+        description: store.description,
+        city: store.city,
+        whatsappNumber: store.whatsappNumber,
+        address: store.address,
+        logoUrl: store.logoUrl,
+        bannerUrl: store.bannerUrl,
+      }}
+      products={products}
+      vouchers={vouchers}
+    />
   );
 }
