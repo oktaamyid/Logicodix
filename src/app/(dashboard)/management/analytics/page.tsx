@@ -1,6 +1,7 @@
 import { getCurrentUserStore } from "@/lib/actions/management/finance";
 import { getBusinessAnalytics } from "@/lib/actions/management/analytics";
 import { InventoryAnalyticsCards } from "@/components/management/InventoryAnalyticsCards";
+import { RevenueTrendChart } from "@/components/management/RevenueTrendChart";
 import { AlertCircle, TrendingUp, DollarSign, ShoppingCart, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
@@ -126,6 +127,9 @@ export default async function AnalyticsPage() {
           </p>
         </div>
       </div>
+
+      {/* Grafik Tren Omzet Penjualan */}
+      <RevenueTrendChart trend={analytics.revenueTrend} />
 
       {/* Algoritma Optimasi Inventori: Fast-Moving, Deadstock, & Restock */}
       <InventoryAnalyticsCards
