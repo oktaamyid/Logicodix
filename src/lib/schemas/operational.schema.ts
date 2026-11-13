@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+export const CREATIVE_SUBSECTORS = [
+  "kuliner",
+  "kriya",
+  "fashion",
+  "desain",
+  "seni_pertunjukan",
+  "fotografi",
+  "musik",
+  "penerbitan",
+  "aplikasi_game",
+  "lainnya",
+] as const;
+
 /**
  * Skema validasi untuk login merchant (Domain 1).
  */
@@ -157,7 +170,62 @@ export const createCategorySchema = z.object({
     .max(80, "Nama kategori maksimal 80 karakter"),
 });
 
+/**
+ * Skema validasi pembaruan pengaturan profil toko UMKM.
+ */
+export const updateStoreSettingsSchema = z.object({
+  storeId: z.string().uuid("ID Toko tidak valid"),
+  name: z
+    .string()
+    .trim()
+    .min(3, "Nama toko minimal 3 karakter")
+    .max(120, "Nama toko maksimal 120 karakter"),
+  slug: z
+    .string()
+    .trim()
+    .min(3, "Slug URL minimal 3 karakter")
+    .max(140)
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Slug hanya boleh berisi huruf kecil, angka, dan tanda hubung (-)"
+    ),
+  subsector: z.enum([
+    "kuliner",
+    "kriya",
+    "fashion",
+    "desain",
+    "seni_pertunjukan",
+    "fotografi",
+    "musik",
+    "penerbitan",
+    "aplikasi_game",
+    "lainnya",
+  ]),
+  whatsappNumber: z
+    .string()
+    .trim()
+    .regex(
+      /^628[0-9]{7,13}$/,
+      "Nomor WhatsApp wajib diawali 628 (contoh: 6281234567890)"
+    ),
+  city: z.string().trim().min(2, "Nama kota/kabupaten wajib diisi").max(80),
+  address: z.string().trim().max(500).optional(),
+  description: z.string().trim().max(1000).optional(),
+  isActive: z.boolean().default(true),
+});
+
+/**
+ * Skema validasi penambahan anggota / staf toko UMKM berdasarkan email akun.
+ */
+export const addStoreMemberSchema = z.object({
+  storeId: z.string().uuid("ID Toko tidak valid"),
+  email: z.string().trim().email("Format email staf tidak valid"),
+  role: z.enum(["cashier", "staff"]),
+});
+
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
+export type UpdateStoreSettingsInput = z.infer<typeof updateStoreSettingsSchema>;
+export type AddStoreMemberInput = z.infer<typeof addStoreMemberSchema>;
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;

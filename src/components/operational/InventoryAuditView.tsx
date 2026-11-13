@@ -291,7 +291,7 @@ export function InventoryAuditView({
         <Button
           size="sm"
           onClick={() => setIsModalOpen(true)}
-          className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+          className="h-9 gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white"
         >
           <RefreshCw className="h-4 w-4" />
           <span>Catat Opname / Restock</span>
@@ -465,7 +465,7 @@ export function InventoryAuditView({
                 <Button
                   type="submit"
                   disabled={isPending}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white"
                 >
                   {isPending ? "Memproses..." : "Simpan Mutasi"}
                 </Button>

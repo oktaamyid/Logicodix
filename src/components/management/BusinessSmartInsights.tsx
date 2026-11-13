@@ -47,7 +47,7 @@ export function BusinessSmartInsights({
         </div>
         <div>
           <h3 className="text-base font-bold text-foreground">
-            Rekomendasi Aksi Bisnis Cerdas (AI Insights)
+            Rekomendasi Aksi Inventori & Arus Kas
           </h3>
           <p className="text-xs text-muted-foreground">
             Saran taktis berbasis data riil transaksi dan perputaran stok toko Anda.
@@ -72,7 +72,7 @@ export function BusinessSmartInsights({
               <strong>{deadstock[0].name}</strong>).
             </p>
             <div className="text-xs text-foreground font-medium bg-background/80 dark:bg-background/40 p-2.5 rounded-lg border border-rose-200/60 dark:border-rose-900/60">
-              💡 <strong>Saran Aksi:</strong> Buat paket *bundle promo* hemat atau tawarkan potongan diskon khusus di etalase toko untuk memutar kembali arus kas.
+              <strong>Saran Aksi:</strong> Buat paket bundel promo hemat atau tawarkan potongan diskon khusus di etalase toko untuk memutar kembali arus kas.
             </div>
           </div>
         ) : (
@@ -103,7 +103,7 @@ export function BusinessSmartInsights({
               (sisa {restockAlerts[0].currentStock} unit).
             </p>
             <div className="text-xs text-foreground font-medium bg-background/80 dark:bg-background/40 p-2.5 rounded-lg border border-amber-200/60 dark:border-amber-900/60">
-              💡 <strong>Saran Aksi:</strong> Lakukan pemesanan ulang (*purchase order*) ke pemasok bahan baku sekarang untuk menghindari hilangnya potensi omzet kasir.
+              <strong>Saran Aksi:</strong> Lakukan pemesanan ulang ke pemasok bahan baku sekarang untuk menghindari hilangnya potensi omzet kasir.
             </div>
           </div>
         ) : (
@@ -129,8 +129,8 @@ export function BusinessSmartInsights({
             {profitMarginPercent >= 20
               ? "(Kategori Sangat Sehat untuk standar UMKM Lokal)"
               : profitMarginPercent >= 10
-              ? "(Cukup Baik — terus optimalkan pengeluaran bahan baku)"
-              : "(Perlu Perhatian — beban operasional mendekati omzet kotor)"}
+              ? "(Cukup Baik, terus optimalkan pengeluaran bahan baku)"
+              : "(Perlu Perhatian, beban operasional mendekati omzet kotor)"}
           </span>
         </div>
         <Link

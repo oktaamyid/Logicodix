@@ -218,7 +218,7 @@ export function PosTerminalView({
               className={cn(
                 "px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors",
                 selectedCategory === "all"
-                  ? "bg-emerald-600 text-white"
+                  ? "bg-emerald-700 text-white"
                   : "bg-muted text-muted-foreground hover:text-foreground"
               )}
             >
@@ -231,7 +231,7 @@ export function PosTerminalView({
                 className={cn(
                   "px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors",
                   selectedCategory === c.id
-                    ? "bg-emerald-600 text-white"
+                    ? "bg-emerald-700 text-white"
                     : "bg-muted text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -271,7 +271,7 @@ export function PosTerminalView({
                 >
                   {/* Cart Indicator Badge */}
                   {inCartItem && (
-                    <span className="absolute -top-2 -right-2 bg-emerald-600 text-white text-xs font-bold h-6 w-6 rounded-full flex items-center justify-center shadow-md">
+                    <span className="absolute -top-2 -right-2 bg-emerald-700 text-white text-xs font-bold h-6 w-6 rounded-full flex items-center justify-center shadow-md">
                       {inCartItem.quantity}
                     </span>
                   )}
@@ -534,7 +534,7 @@ export function PosTerminalView({
             <Button
               disabled={isPending || cart.length === 0}
               onClick={handleCheckout}
-              className="w-full mt-3 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-all active:scale-[0.99]"
+              className="w-full mt-3 h-11 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow-md transition-all active:scale-[0.99]"
             >
               {isPending ? "Memproses Transaksi..." : `Selesaikan Bayar • ${formatIDR(total)}`}
             </Button>
@@ -617,7 +617,7 @@ export function PosTerminalView({
                 <span>Cetak Struk</span>
               </Button>
               <Button
-                className="flex-1 gap-1.5 text-xs h-9 bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="flex-1 gap-1.5 text-xs h-9 bg-emerald-700 hover:bg-emerald-800 text-white"
                 onClick={() => setCompletedReceipt(null)}
               >
                 <RotateCcw className="h-4 w-4" />

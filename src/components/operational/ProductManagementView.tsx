@@ -462,7 +462,7 @@ export function ProductManagementView({
           <Button
             size="sm"
             onClick={handleOpenAddForm}
-            className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="h-9 gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white"
           >
             <Plus className="h-4 w-4" />
             <span>Tambah Produk</span>
@@ -792,7 +792,7 @@ export function ProductManagementView({
                 <Button
                   type="submit"
                   disabled={isPending}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white"
                 >
                   {isPending ? "Menyimpan..." : editingProduct ? "Perbarui Produk" : "Simpan Produk"}
                 </Button>
@@ -891,7 +891,7 @@ export function ProductManagementView({
                 <Button
                   type="submit"
                   disabled={isPending}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white"
                 >
                   {isPending ? "Memproses..." : "Simpan Mutasi"}
                 </Button>
@@ -941,7 +941,7 @@ export function ProductManagementView({
                 <Button
                   type="submit"
                   disabled={isPending}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white"
                 >
                   {isPending ? "Menyimpan..." : "Buat Kategori"}
                 </Button>

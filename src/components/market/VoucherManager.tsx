@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { formatIDR } from "@/lib/utils";
 import { createVoucherAction } from "@/app/(market)/actions";
-import { Tag, Plus, CheckCircle, AlertCircle, Sparkles } from "lucide-react";
+import { Tag, Plus, CheckCircle, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 

@@ -22,6 +22,7 @@ import {
   actionError,
   type ActionResponse,
 } from "@/lib/types/action-response";
+import { verifyStoreAccess } from "@/lib/supabase/auth-guard";
 
 /**
  * Mendapatkan store yang aktif untuk pengguna yang sedang login.
@@ -92,10 +93,14 @@ export async function recordExpenseAction(
     );
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const access = await verifyStoreAccess(parsed.data.storeId, [
+    "owner",
+    "staff",
+    "platform_admin",
+  ]);
+  if (!access.authorized) {
+    return actionError(access.error, access.code);
+  }
 
   try {
     const [inserted] = await db
@@ -107,7 +112,7 @@ export async function recordExpenseAction(
         amount: Math.round(parsed.data.amount),
         description: parsed.data.description,
         transactionDate: parsed.data.transactionDate || new Date(),
-        createdBy: user?.id || null,
+        createdBy: access.userId,
       })
       .returning({ id: financialEntries.id });
 

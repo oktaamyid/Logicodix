@@ -102,7 +102,7 @@ export function InventoryAnalyticsCards({
               Stok Mati (Deadstock)
             </h3>
             <p className="text-xs text-muted-foreground">
-              0 Penjualan — Modal tertahan di gudang
+              0 Penjualan: Modal tertahan di gudang
             </p>
           </div>
         </div>

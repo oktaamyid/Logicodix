@@ -129,7 +129,7 @@ export function BEPForecastCards({
               Proyeksi Bulan Depan (Forecast)
             </h3>
             <p className="text-xs text-muted-foreground">
-              Estimasi omzet & laba bersih berdasarkan *run-rate* penjualan saat ini.
+              Estimasi omzet dan laba bersih berdasarkan laju penjualan harian saat ini.
             </p>
           </div>
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
@@ -170,7 +170,7 @@ export function BEPForecastCards({
         </div>
 
         <div className="p-3 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 text-xs text-muted-foreground">
-          💡 <strong>Wawasan Laju:</strong>{" "}
+          <strong>Catatan Proyeksi:</strong>{" "}
           {projectedProfitNextMonth > 0
             ? "Arus kas usaha Anda diproyeksikan mencetak surplus positif jika tren penjualan harian dapat dipertahankan."
             : "Usaha membutuhkan kenaikan penjualan atau efisiensi biaya beban operasional agar terhindar dari potensi defisit."}

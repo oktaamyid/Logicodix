@@ -22,7 +22,7 @@ export default async function InventoryPage() {
         </p>
         <Link
           href="/onboarding"
-          className="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-medium hover:bg-emerald-700 transition-colors"
+          className="px-4 py-2 bg-emerald-700 text-white rounded-md text-sm font-medium hover:bg-emerald-800 transition-colors"
         >
           Mulai Onboarding Toko
         </Link>

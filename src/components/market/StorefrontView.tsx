@@ -279,7 +279,7 @@ export function StorefrontView({ store, products, vouchers }: StorefrontViewProp
               )}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-xs transition-colors self-start sm:self-end"
+              className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-xs transition-colors self-start sm:self-end"
             >
               <MessageCircle className="h-4 w-4" />
               <span>Hubungi Toko via WhatsApp</span>
@@ -622,7 +622,7 @@ export function StorefrontView({ store, products, vouchers }: StorefrontViewProp
                     href={orderSuccess.whatsappUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-2 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm shadow-sm transition-colors"
+                    className="inline-flex items-center justify-center gap-2 w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-sm shadow-sm transition-colors"
                   >
                     <MessageCircle className="h-5 w-5" />
                     <span>Lanjut Konfirmasi ke WhatsApp</span>

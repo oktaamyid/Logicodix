@@ -32,12 +32,19 @@ import {
   actionError,
   type ActionResponse,
 } from "@/lib/types/action-response";
+import { verifyStoreAccess } from "@/lib/supabase/auth-guard";
 
 /**
  * Helper internal untuk mendapatkan ID store dari merchant yang sedang login.
  */
 export async function getActiveMerchantStore(): Promise<
-  ActionResponse<{ storeId: string; storeName: string; storeSlug: string }>
+  ActionResponse<{
+    storeId: string;
+    storeName: string;
+    storeSlug: string;
+    userEmail: string;
+    userRole: "owner" | "cashier" | "staff" | "platform_admin";
+  }>
 > {
   const supabase = await createClient();
   const {
@@ -51,6 +58,8 @@ export async function getActiveMerchantStore(): Promise<
       "UNAUTHORIZED"
     );
   }
+
+  const userEmail = user.email?.toLowerCase() || "";
 
   // 1. Cek keanggotaan store_members
   const member = await db.query.storeMembers.findFirst({
@@ -66,6 +75,11 @@ export async function getActiveMerchantStore(): Promise<
         storeId: store.id,
         storeName: store.name,
         storeSlug: store.slug,
+        userEmail,
+        userRole:
+          userEmail === "superadmin.niagarupa@gmail.com"
+            ? "platform_admin"
+            : member.role,
       });
     }
   }
@@ -80,6 +94,11 @@ export async function getActiveMerchantStore(): Promise<
       storeId: ownerStore.id,
       storeName: ownerStore.name,
       storeSlug: ownerStore.slug,
+      userEmail,
+      userRole:
+        userEmail === "superadmin.niagarupa@gmail.com"
+          ? "platform_admin"
+          : "owner",
     });
   }
 
@@ -131,6 +150,15 @@ export async function createCategoryAction(
     }
 
     const { storeId, name } = parsed.data;
+    const access = await verifyStoreAccess(storeId, [
+      "owner",
+      "staff",
+      "platform_admin",
+    ]);
+    if (!access.authorized) {
+      return actionError(access.error, access.code);
+    }
+
     const slug = name
       .toLowerCase()
       .trim()
@@ -226,6 +254,14 @@ export async function upsertProductAction(
     }
 
     const data = parsed.data;
+    const access = await verifyStoreAccess(data.storeId, [
+      "owner",
+      "staff",
+      "platform_admin",
+    ]);
+    if (!access.authorized) {
+      return actionError(access.error, access.code);
+    }
 
     if (data.id) {
       // Update produk eksisting
@@ -334,6 +370,14 @@ export async function deleteProductAction(
   storeId: string
 ): Promise<ActionResponse<{ id: string }>> {
   try {
+    const access = await verifyStoreAccess(storeId, [
+      "owner",
+      "platform_admin",
+    ]);
+    if (!access.authorized) {
+      return actionError(access.error, access.code);
+    }
+
     const [existing] = await db
       .select()
       .from(products)
@@ -379,6 +423,10 @@ export async function adjustStockAction(
     }
 
     const { storeId, productId, type, quantityChange, notes } = parsed.data;
+    const access = await verifyStoreAccess(storeId);
+    if (!access.authorized) {
+      return actionError(access.error, access.code);
+    }
 
     // Eksekusi atomik menggunakan database transaction
     const movement = await db.transaction(async (tx) => {
@@ -541,14 +589,12 @@ export async function posCheckoutAction(
     const { storeId, customerName, paymentMethod, discountAmount, notes, items } =
       parsed.data;
 
-    // Ambil data toko untuk struk & prefix order
-    const store = await db.query.stores.findFirst({
-      where: eq(stores.id, storeId),
-    });
-
-    if (!store) {
-      return actionError("Data toko tidak ditemukan", "NOT_FOUND");
+    const access = await verifyStoreAccess(storeId);
+    if (!access.authorized) {
+      return actionError(access.error, access.code);
     }
+
+    const store = access.store;
 
     // Eksekusi ACID Transaction
     const receipt = await db.transaction(async (tx) => {

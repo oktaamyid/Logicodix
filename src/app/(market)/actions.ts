@@ -20,6 +20,7 @@ import {
 } from "@/lib/types/action-response";
 import { eq, and, sql, ilike, desc, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { verifyStoreAccess } from "@/lib/supabase/auth-guard";
 
 export interface ExploreFilters {
   query?: string;
@@ -357,6 +358,11 @@ export async function createPublicOrderAction(
  */
 export async function getStoreOrdersAction(storeId: string) {
   try {
+    const access = await verifyStoreAccess(storeId);
+    if (!access.authorized) {
+      return actionError(access.error, access.code);
+    }
+
     const orderList = await db
       .select()
       .from(orders)
@@ -383,6 +389,10 @@ export async function updateOrderStatusAction(
       return actionError("Data status pesanan tidak valid.");
     }
     const { storeId, orderId, status } = parsed.data;
+    const access = await verifyStoreAccess(storeId);
+    if (!access.authorized) {
+      return actionError(access.error, access.code);
+    }
 
     // Ambil order saat ini
     const existingOrder = await db.query.orders.findFirst({
@@ -449,9 +459,9 @@ export async function updateOrderStatusAction(
       }
     });
 
-    revalidatePath("/orders");
-    revalidatePath("/management/finance");
-    revalidatePath("/operational/inventory");
+    revalidatePath("/dashboard/orders");
+    revalidatePath("/dashboard/management/finance");
+    revalidatePath("/dashboard/operational/inventory");
     return actionSuccess(true);
   } catch (error) {
     console.error("[updateOrderStatusAction] Error:", error);
@@ -464,6 +474,11 @@ export async function updateOrderStatusAction(
  */
 export async function getStoreVouchersAction(storeId: string) {
   try {
+    const access = await verifyStoreAccess(storeId);
+    if (!access.authorized) {
+      return actionError(access.error, access.code);
+    }
+
     const list = await db
       .select()
       .from(vouchers)
@@ -489,6 +504,14 @@ export async function createVoucherAction(
       return actionError(parsed.error.errors[0]?.message || "Data voucher tidak valid.");
     }
     const data = parsed.data;
+    const access = await verifyStoreAccess(data.storeId, [
+      "owner",
+      "staff",
+      "platform_admin",
+    ]);
+    if (!access.authorized) {
+      return actionError(access.error, access.code);
+    }
 
     // Cek apakah kode sudah digunakan di toko ini
     const existing = await db.query.vouchers.findFirst({
