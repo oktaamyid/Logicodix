@@ -6,6 +6,7 @@ import { BusinessSmartInsights } from "@/components/management/BusinessSmartInsi
 import { DateRangeSelector } from "@/components/management/DateRangeSelector";
 import { BEPForecastCards } from "@/components/management/BEPForecastCards";
 import { ManagementEmptyState } from "@/components/management/ManagementEmptyState";
+import { MLAnalyticsPanel } from "@/components/management/MLAnalyticsPanel";
 import { AlertCircle, TrendingUp, DollarSign, ShoppingCart, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
@@ -165,6 +166,12 @@ export default async function AnalyticsPage(props: {
         totalExpense={financeSummary.totalExpense}
         totalOrders={analytics.totalOrders}
         profitMarginPercent={financeSummary.profitMarginPercent}
+      />
+
+      {/* Prediksi Omzet (Holt+OLS) & Klasterisasi Risiko Produk (In-App ML) */}
+      <MLAnalyticsPanel
+        forecast={analytics.mlForecast}
+        productScores={analytics.mlProductScores}
       />
 
       {/* Rekomendasi Aksi Bisnis Cerdas (AI Insights) */}

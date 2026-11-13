@@ -1,6 +1,7 @@
 import { getCurrentUserStore, getFinancialSummary } from "@/lib/actions/management/finance";
 import { getBusinessAnalytics } from "@/lib/actions/management/analytics";
 import { FinanceMetricsCards } from "@/components/management/FinanceMetricsCards";
+import { MLAnalyticsPanel } from "@/components/management/MLAnalyticsPanel";
 import { AlertCircle, Store, ShoppingBag, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -136,6 +137,12 @@ export default async function OverviewPage() {
           </div>
         </div>
       </div>
+
+      {/* Prediksi & Klasterisasi Produk (In-App ML) */}
+      <MLAnalyticsPanel
+        forecast={analytics.mlForecast}
+        productScores={analytics.mlProductScores}
+      />
     </div>
   );
 }

@@ -11,6 +11,13 @@ import {
   stockMovements,
 } from "@/lib/db/schema";
 
+import {
+  forecastRevenueHoltOLS,
+  clusterProductsML,
+  type RevenueForecastResult,
+  type ProductMLScore,
+} from "@/lib/ai/ml-engine";
+
 export interface AnalyticsOverviewData {
   totalRevenue: number;
   totalOrders: number;
@@ -48,6 +55,8 @@ export interface AnalyticsOverviewData {
     revenue: number;
     orderCount: number;
   }[];
+  mlForecast: RevenueForecastResult;
+  mlProductScores: ProductMLScore[];
 }
 
 /**
@@ -91,8 +100,8 @@ export async function getBusinessAnalytics(
     totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
   const grossProfit = totalRevenue - totalCost;
 
-  // 2. Trend Penjualan Harian (7 hari atau rentang waktu terakhir)
-  const recentDays = Math.min(numDays, 7);
+  // 2. Trend Penjualan Harian (hingga 30 hari terakhir untuk grafik & model ML)
+  const recentDays = Math.min(numDays, 30);
   const trendCutoff = new Date();
   trendCutoff.setDate(trendCutoff.getDate() - recentDays);
 
@@ -218,6 +227,22 @@ export async function getBusinessAnalytics(
     })
     .slice(0, 5);
 
+  // 5. Jalankan In-App ML Engine (Forecasting Holt+OLS & Klasterisasi Skor Produk)
+  const mlForecast = forecastRevenueHoltOLS(revenueTrend);
+  const mlProductScores = clusterProductsML(
+    storeProducts.map((p) => ({
+      id: p.id,
+      name: p.name,
+      sku: p.sku,
+      costPrice: p.costPrice,
+      sellingPrice: p.sellingPrice,
+      stockQuantity: p.stockQuantity,
+      lowStockThreshold: p.lowStockThreshold,
+      unitsSold: salesMap.get(p.id) || 0,
+    })),
+    numDays
+  );
+
   return {
     totalRevenue,
     totalOrders,
@@ -228,5 +253,7 @@ export async function getBusinessAnalytics(
     deadstockProducts,
     restockRecommendations,
     revenueTrend,
+    mlForecast,
+    mlProductScores,
   };
 }
