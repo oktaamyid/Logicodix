@@ -1,11 +1,26 @@
-import { getCurrentUserStore } from "@/lib/actions/management/finance";
+import { getCurrentUserStore, getFinancialSummary } from "@/lib/actions/management/finance";
 import { getBusinessAnalytics } from "@/lib/actions/management/analytics";
 import { InventoryAnalyticsCards } from "@/components/management/InventoryAnalyticsCards";
 import { RevenueTrendChart } from "@/components/management/RevenueTrendChart";
+import { BusinessSmartInsights } from "@/components/management/BusinessSmartInsights";
+import { DateRangeSelector } from "@/components/management/DateRangeSelector";
 import { AlertCircle, TrendingUp, DollarSign, ShoppingCart, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage(props: {
+  searchParams?: Promise<{ period?: string }>;
+}) {
+  const searchParams = await props.searchParams;
+  const periodParam = searchParams?.period || "30d";
+  const days =
+    periodParam === "7d"
+      ? 7
+      : periodParam === "90d"
+      ? 90
+      : periodParam === "all"
+      ? "all"
+      : 30;
+
   const storeRes = await getCurrentUserStore();
 
   if (!storeRes.success) {
@@ -28,7 +43,10 @@ export default async function AnalyticsPage() {
   }
 
   const { storeId, storeName } = storeRes.data;
-  const analytics = await getBusinessAnalytics(storeId, 30);
+  const [analytics, financeSummary] = await Promise.all([
+    getBusinessAnalytics(storeId, days),
+    getFinancialSummary(storeId, days),
+  ]);
 
   const formatIDR = (num: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -55,6 +73,8 @@ export default async function AnalyticsPage() {
             Wawasan performa penjualan, deteksi perputaran barang fast-moving, peringatan deadstock, dan proyeksi restock.
           </p>
         </div>
+
+        <DateRangeSelector />
       </div>
 
       {/* KPI Cards Utama */}
@@ -130,6 +150,14 @@ export default async function AnalyticsPage() {
 
       {/* Grafik Tren Omzet Penjualan */}
       <RevenueTrendChart trend={analytics.revenueTrend} />
+
+      {/* Rekomendasi Aksi Bisnis Cerdas (AI Insights) */}
+      <BusinessSmartInsights
+        deadstock={analytics.deadstockProducts}
+        restockAlerts={analytics.restockRecommendations}
+        profitMarginPercent={financeSummary.profitMarginPercent}
+        averageOrderValue={analytics.averageOrderValue}
+      />
 
       {/* Algoritma Optimasi Inventori: Fast-Moving, Deadstock, & Restock */}
       <InventoryAnalyticsCards
