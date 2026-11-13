@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useId, useRef, useState } from "react";
-import { Camera, RefreshCw, X, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Camera, RefreshCw, X, AlertCircle, CheckCircle2, ScanLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface BarcodeScannerModalProps {
@@ -38,11 +38,13 @@ export function BarcodeScannerModal({
   const [isStarting, setIsStarting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastScanned, setLastScanned] = useState<string | null>(null);
+  const [flashSuccess, setFlashSuccess] = useState<boolean>(false);
 
   const onScanSuccessRef = useRef(onScanSuccess);
   const onCloseRef = useRef(onClose);
   const lastScanTimeRef = useRef<number>(0);
   const lastScanCodeRef = useRef<string>("");
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     onScanSuccessRef.current = onScanSuccess;
@@ -66,9 +68,18 @@ export function BarcodeScannerModal({
   }, [isOpen]);
 
   useEffect(() => {
+    return () => {
+      if (flashTimerRef.current) {
+        clearTimeout(flashTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (!isOpen) {
       setErrorMessage(null);
       setLastScanned(null);
+      setFlashSuccess(false);
       return;
     }
 
@@ -140,7 +151,16 @@ export function BarcodeScannerModal({
             lastScanCodeRef.current = cleanCode;
             lastScanTimeRef.current = now;
 
+            // Trigger indikator hijau sukses scan
             setLastScanned(cleanCode);
+            setFlashSuccess(true);
+            if (flashTimerRef.current) {
+              clearTimeout(flashTimerRef.current);
+            }
+            flashTimerRef.current = setTimeout(() => {
+              setFlashSuccess(false);
+            }, 1800);
+
             onScanSuccessRef.current(cleanCode);
 
             if (!continuous) {
@@ -248,32 +268,74 @@ export function BarcodeScannerModal({
           </button>
         </div>
 
+        {/* Petunjuk Arah Pemindaian */}
+        <div className="px-4 py-2 bg-muted/40 border-b flex items-center gap-2 text-xs text-muted-foreground">
+          <ScanLine className="h-4 w-4 text-emerald-700 shrink-0" />
+          <span>
+            Posisikan garis merah atau barcode tepat di dalam kotak tengah pemindai.
+          </span>
+        </div>
+
         {/* Viewport Kamera */}
         <div className="p-4 space-y-3">
           <div className="relative rounded-xl overflow-hidden bg-slate-950 border min-h-[260px] flex items-center justify-center">
             <div id={readerId} className="w-full" />
 
+            {/* Flash Overlay saat barcode berhasil terbaca */}
+            {flashSuccess && (
+              <div
+                aria-live="polite"
+                className="absolute inset-0 bg-emerald-500/25 border-4 border-emerald-500 rounded-xl flex items-center justify-center transition-all duration-300 pointer-events-none z-20"
+              >
+                <div className="px-3.5 py-1.5 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg animate-in zoom-in-90">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Barcode Berhasil Terbaca</span>
+                </div>
+              </div>
+            )}
+
             {isStarting && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 text-white gap-2 p-4 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 text-white gap-2 p-4 text-center z-10">
                 <RefreshCw className="h-6 w-6 animate-spin text-emerald-400" />
                 <p className="text-xs font-medium">Menyiapkan kamera...</p>
               </div>
             )}
 
             {errorMessage && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-white gap-3 p-6 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-white gap-3 p-6 text-center z-10">
                 <AlertCircle className="h-8 w-8 text-amber-400 shrink-0" />
                 <p className="text-xs leading-relaxed text-slate-200">{errorMessage}</p>
               </div>
             )}
           </div>
 
-          {lastScanned && (
-            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700" />
-              <span className="truncate">
-                Terbaca: <strong className="font-mono">{lastScanned}</strong>
+          {/* Notifikasi Hijau Hasil Scan */}
+          {lastScanned ? (
+            <div
+              role="status"
+              className="flex items-center justify-between gap-2 p-3 rounded-xl bg-emerald-50 border-2 border-emerald-400 text-emerald-950 text-xs shadow-sm animate-in fade-in-50 duration-200"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="h-6 w-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="h-4 w-4" />
+                </div>
+                <div className="truncate">
+                  <span className="font-semibold text-emerald-900 block text-[11px]">
+                    Barcode Berhasil Terdeteksi
+                  </span>
+                  <span className="font-mono font-bold text-emerald-800 text-xs">
+                    {lastScanned}
+                  </span>
+                </div>
+              </div>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 shrink-0">
+                Tercatat
               </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/60 border text-muted-foreground text-xs">
+              <ScanLine className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span>Menunggu barcode di depan kamera...</span>
             </div>
           )}
 
