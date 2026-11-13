@@ -24,7 +24,9 @@ import {
   ExternalLink,
   Percent,
   Cpu,
+  Camera,
 } from "lucide-react";
+import { BarcodeScannerModal } from "./BarcodeScannerModal";
 
 const DEFAULT_UNITS = [
   "pcs",
@@ -128,6 +130,7 @@ export function ProductManagementView({
   const [customUnits, setCustomUnits] = useState<string[]>([]);
   const [isAddingCustomUnit, setIsAddingCustomUnit] = useState(false);
   const [customUnitInput, setCustomUnitInput] = useState("");
+  const [scannerTarget, setScannerTarget] = useState<"search" | "sku" | null>(null);
 
   const unitOptions = Array.from(
     new Set([
@@ -460,15 +463,28 @@ export function ProductManagementView({
       {/* Action Toolbar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-4 rounded-xl border">
         <div className="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          {/* Search */}
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Cari nama produk atau SKU..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-sm"
-            />
+          {/* Search + Scan Kamera */}
+          <div className="flex items-center gap-2 flex-1 max-w-md">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Cari nama produk atau SKU..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 text-sm"
+              />
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setScannerTarget("search")}
+              title="Scan Barcode Produk dengan Kamera"
+              className="h-9 px-2.5 gap-1.5 shrink-0"
+            >
+              <Camera className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">Scan</span>
+            </Button>
           </div>
 
           {/* Category Filter */}
@@ -687,15 +703,27 @@ export function ProductManagementView({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-semibold text-foreground">
-                    Kode SKU <span className="text-red-500">*</span>
+                    Kode SKU / Barcode <span className="text-red-500">*</span>
                   </label>
-                  <Input
-                    required
-                    value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    className="mt-1 font-mono text-sm"
-                    placeholder="Contoh: KOP-001"
-                  />
+                  <div className="mt-1 flex items-center gap-2">
+                    <Input
+                      required
+                      value={formData.sku}
+                      onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                      className="font-mono text-sm flex-1"
+                      placeholder="Contoh: KOP-001 atau scan barcode"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setScannerTarget("sku")}
+                      title="Scan Barcode Kemasan dengan Kamera"
+                      className="h-10 px-3 gap-1.5 shrink-0 text-xs"
+                    >
+                      <Camera className="h-4 w-4" />
+                      <span>Scan</span>
+                    </Button>
+                  </div>
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-foreground">
@@ -1130,6 +1158,28 @@ export function ProductManagementView({
           </div>
         </div>
       )}
+
+      <BarcodeScannerModal
+        isOpen={scannerTarget !== null}
+        onClose={() => setScannerTarget(null)}
+        title={
+          scannerTarget === "sku"
+            ? "Scan Barcode untuk Kode SKU"
+            : "Cari Produk via Barcode Kamera"
+        }
+        description={
+          scannerTarget === "sku"
+            ? "Arahkan kamera ke barcode kemasan untuk mengisi Kode SKU otomatis."
+            : "Arahkan kamera ke barcode produk untuk memfilter daftar produk."
+        }
+        onScanSuccess={(decodedText) => {
+          if (scannerTarget === "sku") {
+            setFormData((prev) => ({ ...prev, sku: decodedText }));
+          } else if (scannerTarget === "search") {
+            setSearchQuery(decodedText);
+          }
+        }}
+      />
     </div>
   );
 }
