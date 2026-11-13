@@ -5,7 +5,7 @@ export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {}
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, ...props }, ref) => {
+  ({ className, type, onWheel, ...props }, ref) => {
     return (
       <input
         type={type}
@@ -14,6 +14,15 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           className
         )}
         ref={ref}
+        onWheel={(e) => {
+          // Cegah perubahan angka saat mouse scroll di atas input number
+          if (type === "number") {
+            (e.target as HTMLElement).blur();
+          }
+          if (onWheel) {
+            onWheel(e);
+          }
+        }}
         {...props}
       />
     );
