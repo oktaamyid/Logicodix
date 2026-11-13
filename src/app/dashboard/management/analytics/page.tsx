@@ -4,6 +4,8 @@ import { InventoryAnalyticsCards } from "@/components/management/InventoryAnalyt
 import { RevenueTrendChart } from "@/components/management/RevenueTrendChart";
 import { BusinessSmartInsights } from "@/components/management/BusinessSmartInsights";
 import { DateRangeSelector } from "@/components/management/DateRangeSelector";
+import { BEPForecastCards } from "@/components/management/BEPForecastCards";
+import { ManagementEmptyState } from "@/components/management/ManagementEmptyState";
 import { AlertCircle, TrendingUp, DollarSign, ShoppingCart, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
@@ -150,6 +152,20 @@ export default async function AnalyticsPage(props: {
 
       {/* Grafik Tren Omzet Penjualan */}
       <RevenueTrendChart trend={analytics.revenueTrend} />
+
+      {/* Jika belum ada transaksi sama sekali */}
+      {analytics.totalOrders === 0 && (
+        <ManagementEmptyState type="analytics" storeName={storeName} />
+      )}
+
+      {/* Kalkulator Titik Impas (BEP) & Proyeksi Finansial (Forecast) */}
+      <BEPForecastCards
+        totalRevenue={analytics.totalRevenue}
+        totalCost={analytics.totalCost}
+        totalExpense={financeSummary.totalExpense}
+        totalOrders={analytics.totalOrders}
+        profitMarginPercent={financeSummary.profitMarginPercent}
+      />
 
       {/* Rekomendasi Aksi Bisnis Cerdas (AI Insights) */}
       <BusinessSmartInsights

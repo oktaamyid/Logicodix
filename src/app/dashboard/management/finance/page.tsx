@@ -9,6 +9,8 @@ import { FinancialTransactionsTable } from "@/components/management/FinancialTra
 import { ExpenseBreakdownCard } from "@/components/management/ExpenseBreakdownCard";
 import { ExportFinanceReportButton } from "@/components/management/ExportFinanceReportButton";
 import { DateRangeSelector } from "@/components/management/DateRangeSelector";
+import { BEPForecastCards } from "@/components/management/BEPForecastCards";
+import { ManagementEmptyState } from "@/components/management/ManagementEmptyState";
 import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -93,6 +95,20 @@ export default async function FinancePage(props: {
         profitMarginPercent={summary.profitMarginPercent}
         totalOrdersCompleted={summary.totalOrdersCompleted}
       />
+
+      {/* Kalkulator Titik Impas (BEP) & Proyeksi Finansial (Forecast) */}
+      <BEPForecastCards
+        totalRevenue={summary.totalIncome}
+        totalCost={summary.totalIncome - summary.grossProfit}
+        totalExpense={summary.totalExpense}
+        totalOrders={summary.totalOrdersCompleted}
+        profitMarginPercent={summary.profitMarginPercent}
+      />
+
+      {/* Jika belum ada transaksi dan belum ada pengeluaran sama sekali */}
+      {summary.totalIncome === 0 && summary.totalExpense === 0 && (
+        <ManagementEmptyState type="finance" storeName={storeName} />
+      )}
 
       {/* Grid: Struktur Beban Pengeluaran & Riwayat Transaksi */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
