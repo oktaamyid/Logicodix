@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { formatIDR, formatDateTime } from "@/lib/utils";
 import { updateOrderStatusAction } from "@/app/(market)/actions";
 import {
@@ -8,14 +9,15 @@ import {
   CheckCircle,
   Truck,
   XCircle,
-  ChevronRight,
   Phone,
-  MapPin,
-  FileText,
-  RefreshCw,
+  Search,
+  Download,
+  Calendar,
   ShoppingBag,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export interface OrderItemData {
   id: string;
@@ -75,13 +77,23 @@ export function OrderManagementTable({
 }: OrderManagementTableProps) {
   const [ordersList, setOrdersList] = useState<OrderItemData[]>(initialOrders);
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<OrderItemData | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const filteredOrders =
-    activeTab === "all"
-      ? ordersList
-      : ordersList.filter((o) => o.status === activeTab);
+  // Filter gabungan Tab Status & Query Pencarian (No. Order / Nama / WhatsApp)
+  const filteredOrders = ordersList.filter((o) => {
+    const matchesTab = activeTab === "all" || o.status === activeTab;
+    if (!matchesTab) return false;
+
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    return (
+      o.orderNumber.toLowerCase().includes(q) ||
+      o.customerName.toLowerCase().includes(q) ||
+      (o.customerPhone && o.customerPhone.includes(q))
+    );
+  });
 
   const handleUpdateStatus = (
     orderId: string,
@@ -105,10 +117,79 @@ export function OrderManagementTable({
     });
   };
 
+  // Ekspor Rekap Pesanan ke CSV
+  const exportToCSV = () => {
+    if (ordersList.length === 0) return;
+
+    const headers = [
+      "No. Pesanan",
+      "Tanggal",
+      "Kanal",
+      "Status",
+      "Nama Pelanggan",
+      "No. WhatsApp",
+      "Alamat",
+      "Metode Bayar",
+      "Subtotal",
+      "Diskon",
+      "Total Tagihan",
+    ];
+
+    const rows = filteredOrders.map((o) => [
+      o.orderNumber,
+      new Date(o.createdAt).toISOString(),
+      o.channel,
+      o.status,
+      `"${o.customerName.replace(/"/g, '""')}"`,
+      `"${o.customerPhone || ""}"`,
+      `"${(o.customerAddress || "").replace(/"/g, '""')}"`,
+      o.paymentMethod,
+      o.subtotalAmount,
+      o.discountAmount,
+      o.totalAmount,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Rekap_Pesanan_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* Search & Export Toolbar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Cari no. pesanan, nama pelanggan, atau no. WA..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-9 text-xs"
+          />
+        </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={exportToCSV}
+          disabled={filteredOrders.length === 0}
+          className="gap-1.5 text-xs h-9 shrink-0"
+        >
+          <Download className="h-3.5 w-3.5" />
+          <span>Ekspor Rekap ({filteredOrders.length} Pesanan)</span>
+        </Button>
+      </div>
+
       {/* Status Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
         {[
           { id: "all", label: `Semua (${ordersList.length})` },
           { id: "pending", label: "Menunggu" },
@@ -120,10 +201,10 @@ export function OrderManagementTable({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-3 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap ${
               activeTab === tab.id
-                ? "bg-primary text-primary-foreground shadow-xs"
-                : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                ? "bg-foreground text-background font-bold"
+                : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab.label}
@@ -134,10 +215,12 @@ export function OrderManagementTable({
       {/* Orders Grid / Table */}
       {filteredOrders.length === 0 ? (
         <div className="rounded-xl border border-dashed p-12 text-center bg-card">
-          <ShoppingBag className="h-10 w-10 mx-auto text-muted-foreground mb-3 opacity-40" />
-          <p className="font-semibold text-sm">Tidak ada pesanan masuk</p>
+          <ShoppingBag className="h-10 w-10 mx-auto text-muted-foreground mb-3 opacity-30" />
+          <p className="font-semibold text-sm">Tidak ada pesanan ditemukan</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Pesanan dari pembeli di storefront online atau WhatsApp akan tampil otomatis di sini.
+            {searchQuery
+              ? "Tidak ada pesanan yang sesuai dengan kata kunci pencarian Anda."
+              : "Pesanan masuk dari pelanggan online dan WhatsApp akan tampil otomatis di sini."}
           </p>
         </div>
       ) : (
@@ -153,8 +236,8 @@ export function OrderManagementTable({
                 <div
                   key={order.id}
                   onClick={() => setSelectedOrder(order)}
-                  className={`rounded-xl border bg-card p-4 hover:shadow-xs transition-all cursor-pointer ${
-                    isSelected ? "border-primary ring-1 ring-primary/20" : "hover:border-primary/40"
+                  className={`rounded-xl border bg-card p-4 hover:border-foreground/30 transition-all cursor-pointer ${
+                    isSelected ? "border-primary ring-1 ring-primary/20" : ""
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -192,10 +275,22 @@ export function OrderManagementTable({
             {selectedOrder ? (
               <div className="rounded-xl border bg-card p-5 space-y-5 sticky top-20 shadow-xs">
                 <div className="border-b pb-3">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                    Rincian Pesanan
-                  </span>
-                  <h3 className="font-mono font-black text-base">{selectedOrder.orderNumber}</h3>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                      Rincian Pesanan
+                    </span>
+                    <Link
+                      href={`/order-status/${selectedOrder.orderNumber}`}
+                      target="_blank"
+                      className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-semibold"
+                    >
+                      <span>Halaman Publik</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </Link>
+                  </div>
+                  <h3 className="font-mono font-black text-base mt-1">
+                    {selectedOrder.orderNumber}
+                  </h3>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
                     {formatDateTime(selectedOrder.createdAt)}
                   </p>
@@ -263,7 +358,7 @@ export function OrderManagementTable({
                 {/* Status Action Buttons */}
                 <div className="border-t pt-4 space-y-2">
                   <span className="text-[11px] font-semibold text-muted-foreground">
-                    Perbarui Status:
+                    Perbarui Status Pesanan:
                   </span>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <Button
@@ -289,7 +384,7 @@ export function OrderManagementTable({
                       variant={selectedOrder.status === "completed" ? "default" : "outline"}
                       disabled={isPending}
                       onClick={() => handleUpdateStatus(selectedOrder.id, "completed")}
-                      className="text-xs h-8 text-emerald-600 hover:text-emerald-700"
+                      className="text-xs h-8 text-emerald-600 hover:text-emerald-700 font-semibold"
                     >
                       Selesai
                     </Button>
@@ -316,4 +411,3 @@ export function OrderManagementTable({
     </div>
   );
 }
-

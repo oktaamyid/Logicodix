@@ -9,6 +9,7 @@ import {
   Store as StoreIcon,
   Package,
   ArrowRight,
+  Tag,
   SlidersHorizontal,
 } from "lucide-react";
 import { type StoreWithProductCount } from "@/app/(market)/actions";
@@ -38,33 +39,37 @@ export function ExploreDirectory({ initialStores }: ExploreDirectoryProps) {
   const [isPending, startTransition] = useTransition();
 
   const currentSubsector = searchParams.get("subsector") || "all";
+  const currentSort = searchParams.get("sort") || "latest";
+  const currentPromo = searchParams.get("promo") === "true";
+
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
   const [cityFilter, setCityFilter] = useState(searchParams.get("city") || "");
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const updateFilters = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (searchTerm.trim()) params.set("q", searchTerm.trim());
-    else params.delete("q");
-
-    if (cityFilter.trim()) params.set("city", cityFilter.trim());
-    else params.delete("city");
+    Object.entries(updates).forEach(([key, val]) => {
+      if (val === null || val === "" || val === "all") {
+        params.delete(key);
+      } else {
+        params.set(key, val);
+      }
+    });
 
     startTransition(() => {
       router.push(`/explore?${params.toString()}`);
     });
   };
 
-  const handleSelectSubsector = (subsectorId: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (subsectorId === "all") {
-      params.delete("subsector");
-    } else {
-      params.set("subsector", subsectorId);
-    }
-    startTransition(() => {
-      router.push(`/explore?${params.toString()}`);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateFilters({
+      q: searchTerm.trim() || null,
+      city: cityFilter.trim() || null,
     });
+  };
+
+  const handleSelectSubsector = (subsectorId: string) => {
+    updateFilters({ subsector: subsectorId });
   };
 
   const clearFilters = () => {
@@ -78,14 +83,16 @@ export function ExploreDirectory({ initialStores }: ExploreDirectoryProps) {
   const hasActiveFilters =
     Boolean(searchTerm.trim()) ||
     Boolean(cityFilter.trim()) ||
-    currentSubsector !== "all";
+    currentSubsector !== "all" ||
+    currentPromo ||
+    currentSort !== "latest";
 
   return (
     <div className="space-y-6">
       {/* Search & Filter Bar */}
       <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-4">
         <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-          <div className="sm:col-span-6 relative">
+          <div className="sm:col-span-5 relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Cari toko atau produk lokal..."
@@ -97,19 +104,19 @@ export function ExploreDirectory({ initialStores }: ExploreDirectoryProps) {
           <div className="sm:col-span-4 relative">
             <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Kota / Kabupaten (contoh: Yogyakarta)..."
+              placeholder="Kota / Daerah (contoh: Yogyakarta)..."
               value={cityFilter}
               onChange={(e) => setCityFilter(e.target.value)}
               className="pl-9 h-10 text-xs sm:text-sm"
             />
           </div>
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-3">
             <Button
               type="submit"
               disabled={isPending}
               className="w-full h-10 text-xs sm:text-sm font-semibold"
             >
-              {isPending ? "Mencari..." : "Terapkan"}
+              {isPending ? "Mencari..." : "Terapkan Pencarian"}
             </Button>
           </div>
         </form>
@@ -132,6 +139,36 @@ export function ExploreDirectory({ initialStores }: ExploreDirectoryProps) {
               </button>
             );
           })}
+        </div>
+
+        {/* Sort & Promo Toggles */}
+        <div className="border-t pt-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground font-medium flex items-center gap-1">
+              <SlidersHorizontal className="h-3.5 w-3.5" /> Urutkan:
+            </span>
+            <select
+              value={currentSort}
+              onChange={(e) => updateFilters({ sort: e.target.value })}
+              className="bg-muted px-2.5 py-1 rounded-md border text-xs font-medium focus:outline-hidden"
+            >
+              <option value="latest">Terbaru Terdaftar</option>
+              <option value="products_count">Produk Terbanyak</option>
+              <option value="name_asc">Nama Toko (A - Z)</option>
+            </select>
+          </div>
+
+          <button
+            onClick={() => updateFilters({ promo: currentPromo ? null : "true" })}
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold border transition-colors ${
+              currentPromo
+                ? "bg-amber-500/10 text-amber-700 border-amber-300 dark:border-amber-700"
+                : "bg-muted/50 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Tag className="h-3.5 w-3.5 text-amber-600" />
+            <span>Ada Voucher Promo</span>
+          </button>
         </div>
       </div>
 
@@ -191,8 +228,15 @@ export function ExploreDirectory({ initialStores }: ExploreDirectoryProps) {
                       {store.name}
                     </div>
                   )}
-                  <div className="absolute top-3 right-3 bg-background/90 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border">
-                    {store.subsector}
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                    {store.hasActiveVoucher && (
+                      <span className="bg-amber-500 text-white px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider shadow-xs flex items-center gap-1">
+                        <Tag className="h-2.5 w-2.5" /> PROMO
+                      </span>
+                    )}
+                    <span className="bg-background/90 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border">
+                      {store.subsector}
+                    </span>
                   </div>
                 </div>
 

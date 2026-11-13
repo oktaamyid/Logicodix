@@ -18,13 +18,15 @@ import {
   actionError,
   type ActionResponse,
 } from "@/lib/types/action-response";
-import { eq, and, sql, ilike, desc, inArray } from "drizzle-orm";
+import { eq, and, sql, ilike, desc, asc, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export interface ExploreFilters {
   query?: string;
   subsector?: string;
   city?: string;
+  sortBy?: "latest" | "popular" | "products_count" | "name_asc";
+  hasVoucherOnly?: boolean;
 }
 
 export interface StoreWithProductCount {
@@ -38,10 +40,11 @@ export interface StoreWithProductCount {
   logoUrl: string | null;
   bannerUrl: string | null;
   productCount: number;
+  hasActiveVoucher: boolean;
 }
 
 /**
- * Mengambil daftar UMKM untuk direktori publik (/explore) dengan filter subsektor, pencarian nama/kota.
+ * Mengambil daftar UMKM untuk direktori publik (/explore) dengan filter subsektor, pencarian nama/kota, sortir, dan promo filter.
  */
 export async function getExploreStoresAction(
   filters: ExploreFilters = {}
@@ -69,7 +72,7 @@ export async function getExploreStoresAction(
       );
     }
 
-    const storeList = await db
+    const queryBuilder = db
       .select({
         id: stores.id,
         name: stores.name,
@@ -80,7 +83,8 @@ export async function getExploreStoresAction(
         whatsappNumber: stores.whatsappNumber,
         logoUrl: stores.logoUrl,
         bannerUrl: stores.bannerUrl,
-        productCount: sql<number>`cast(count(${products.id}) as integer)`,
+        productCount: sql<number>`cast(count(distinct ${products.id}) as integer)`,
+        hasActiveVoucher: sql<boolean>`case when count(distinct ${vouchers.id}) > 0 then true else false end`,
       })
       .from(stores)
       .leftJoin(
@@ -91,9 +95,33 @@ export async function getExploreStoresAction(
           eq(products.isPublished, true)
         )
       )
+      .leftJoin(
+        vouchers,
+        and(
+          eq(vouchers.storeId, stores.id),
+          eq(vouchers.isActive, true),
+          sql`(${vouchers.validUntil} IS NULL OR ${vouchers.validUntil} > NOW())`,
+          sql`${vouchers.usedCount} < ${vouchers.quota}`
+        )
+      )
       .where(and(...conditions))
-      .groupBy(stores.id)
-      .orderBy(desc(stores.createdAt));
+      .groupBy(stores.id);
+
+    // Filter jika hanya toko yang memiliki voucher promo aktif
+    if (filters.hasVoucherOnly) {
+      queryBuilder.having(sql`count(distinct ${vouchers.id}) > 0`);
+    }
+
+    // Sortir urutan
+    if (filters.sortBy === "products_count") {
+      queryBuilder.orderBy(desc(sql`count(distinct ${products.id})`));
+    } else if (filters.sortBy === "name_asc") {
+      queryBuilder.orderBy(asc(stores.name));
+    } else {
+      queryBuilder.orderBy(desc(stores.createdAt));
+    }
+
+    const storeList = await queryBuilder;
 
     return actionSuccess(storeList);
   } catch (error) {
@@ -164,6 +192,39 @@ export async function getStoreBySlugAction(slug: string) {
   } catch (error) {
     console.error("[getStoreBySlugAction] Error:", error);
     return actionError("Gagal memuat profil toko.");
+  }
+}
+
+/**
+ * Mengambil detail status pesanan publik berdasarkan nomor order (/order-status/[orderNumber]).
+ */
+export async function getPublicOrderDetailAction(orderNumber: string) {
+  try {
+    const order = await db.query.orders.findFirst({
+      where: eq(orders.orderNumber, orderNumber.trim()),
+    });
+
+    if (!order) {
+      return actionError("Pesanan tidak ditemukan dengan nomor tersebut.", "NOT_FOUND");
+    }
+
+    const store = await db.query.stores.findFirst({
+      where: eq(stores.id, order.storeId),
+    });
+
+    const items = await db
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.orderId, order.id));
+
+    return actionSuccess({
+      order,
+      store,
+      items,
+    });
+  } catch (error) {
+    console.error("[getPublicOrderDetailAction] Error:", error);
+    return actionError("Gagal memuat status pesanan.");
   }
 }
 
@@ -334,12 +395,12 @@ export async function createPublicOrderAction(
       )
       .join("\n");
 
-    const message = `Halo ${store.name}! 👋\nSaya ingin konfirmasi pesanan dari Toko Online Niagarupa:\n\n*No. Pesanan:* ${orderNumber}\n*Nama:* ${data.customerName}\n*Alamat/Catatan:* ${data.customerAddress}\n*Metode Bayar:* ${data.paymentMethod.toUpperCase()}\n\n*Rincian Pesanan:*\n${itemListText}\n\n*Subtotal:* Rp ${subtotalAmount.toLocaleString("id-ID")}\n*Diskon:* Rp ${discountAmount.toLocaleString("id-ID")}\n*Total Tagihan:* Rp ${totalAmount.toLocaleString("id-ID")}\n\nMohon petunjuk pembayaran & konfirmasinya ya kak. Terima kasih! 🙏`;
+    const message = `Halo ${store.name}! 👋\nSaya ingin konfirmasi pesanan dari Toko Online Niagarupa:\n\n*No. Pesanan:* ${orderNumber}\n*Nama:* ${data.customerName}\n*Alamat/Catatan:* ${data.customerAddress}\n*Metode Bayar:* ${data.paymentMethod.toUpperCase()}\n\n*Rincian Pesanan:*\n${itemListText}\n\n*Subtotal:* Rp ${subtotalAmount.toLocaleString("id-ID")}\n*Diskon:* Rp ${discountAmount.toLocaleString("id-ID")}\n*Total Tagihan:* Rp ${totalAmount.toLocaleString("id-ID")}\n\nLacak status pesanan online: /order-status/${orderNumber}\n\nMohon petunjuk pembayaran & konfirmasinya ya kak. Terima kasih! 🙏`;
 
     const whatsappUrl = `https://wa.me/${targetWa}?text=${encodeURIComponent(message)}`;
 
     revalidatePath(`/store/${store.slug}`);
-    revalidatePath("/orders");
+    revalidatePath("/dashboard/orders");
 
     return actionSuccess({
       orderNumber,
@@ -353,7 +414,7 @@ export async function createPublicOrderAction(
 }
 
 /**
- * Mengambil daftar pesanan masuk untuk UMKM di dashboard (/orders).
+ * Mengambil daftar pesanan masuk untuk UMKM di dashboard (/dashboard/orders).
  */
 export async function getStoreOrdersAction(storeId: string) {
   try {
@@ -371,7 +432,7 @@ export async function getStoreOrdersAction(storeId: string) {
 }
 
 /**
- * Update status pesanan UMKM di dashboard (/orders).
+ * Update status pesanan UMKM di dashboard (/dashboard/orders).
  * Terintegrasi ke Domain 1 (pengurangan stok saat completed) dan Domain 3 (pembukuan buku kas otomatis).
  */
 export async function updateOrderStatusAction(
@@ -449,9 +510,9 @@ export async function updateOrderStatusAction(
       }
     });
 
-    revalidatePath("/orders");
-    revalidatePath("/management/finance");
-    revalidatePath("/operational/inventory");
+    revalidatePath("/dashboard/orders");
+    revalidatePath("/dashboard/management/finance");
+    revalidatePath("/dashboard/operational/inventory");
     return actionSuccess(true);
   } catch (error) {
     console.error("[updateOrderStatusAction] Error:", error);
@@ -460,7 +521,7 @@ export async function updateOrderStatusAction(
 }
 
 /**
- * Mengambil daftar voucher toko (/orders/vouchers).
+ * Mengambil daftar voucher toko (/dashboard/orders/vouchers).
  */
 export async function getStoreVouchersAction(storeId: string) {
   try {
@@ -478,7 +539,7 @@ export async function getStoreVouchersAction(storeId: string) {
 }
 
 /**
- * Membuat voucher diskon baru untuk toko (/orders/vouchers).
+ * Membuat voucher diskon baru untuk toko (/dashboard/orders/vouchers).
  */
 export async function createVoucherAction(
   rawInput: CreateVoucherInput
@@ -490,7 +551,6 @@ export async function createVoucherAction(
     }
     const data = parsed.data;
 
-    // Cek apakah kode sudah digunakan di toko ini
     const existing = await db.query.vouchers.findFirst({
       where: and(eq(vouchers.storeId, data.storeId), eq(vouchers.code, data.code)),
     });
@@ -507,7 +567,7 @@ export async function createVoucherAction(
       isActive: true,
     });
 
-    revalidatePath("/orders/vouchers");
+    revalidatePath("/dashboard/orders/vouchers");
     return actionSuccess(true);
   } catch (error) {
     console.error("[createVoucherAction] Error:", error);
