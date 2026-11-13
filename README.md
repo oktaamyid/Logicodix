@@ -123,12 +123,38 @@ Aplikasi ini menggunakan Next.js 15 App Router dengan Server Actions dan koneksi
    pnpm dlx wrangler deploy
    ```
 
-### C. Deploy Otomatis via GitHub (Cloudflare Workers Builds)
+### C. Deploy Otomatis via GitHub Actions (Sangat Direkomendasikan)
 
+Pipeline CI/CD otomatis telah disiapkan di `.github/workflows/deploy.yml`. Setiap push ke branch **`main`** atau **`staging`** akan secara otomatis membangun aplikasi di runner Ubuntu Linux dan men-deploy ke Cloudflare Workers.
+
+#### 1. Dapatkan Kredensial Cloudflare
+- **Account ID**: Buka [Cloudflare Dashboard](https://dash.cloudflare.com) -> pilih akun -> salin **Account ID** di sidebar kanan.
+- **API Token**: Buka **My Profile** -> **API Tokens** -> **Create Token** -> gunakan template **Edit Cloudflare Workers** (atau beri izin *Account: Cloudflare Workers: Edit*, *Zone: Zone: Read*).
+
+#### 2. Daftarkan GitHub Secrets
+Buka repository GitHub `oktaamyid/Logicodix` -> **Settings** -> **Secrets and variables** -> **Actions** -> **New repository secret**:
+
+| Nama Secret | Deskripsi / Sumber Nilai |
+| :--- | :--- |
+| `CLOUDFLARE_API_TOKEN` | Token API Cloudflare dari langkah 1 |
+| `CLOUDFLARE_ACCOUNT_ID` | Account ID Cloudflare dari langkah 1 |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL project Supabase Anda |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon public key Supabase |
+| `DATABASE_URL` | Transaction connection pooler URI Supabase PostgreSQL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (akses backend) |
+
+#### 3. Selesai
+Cukup lakukan `git push origin main` (atau trigger manual melalui tab **Actions** -> **Deploy to Cloudflare Workers** -> **Run workflow**). Workflow akan melakukan kompilasi Next.js OpenNext di Ubuntu Linux dan mempublikasikannya ke Cloudflare secara atomik tanpa batas container Cloudflare Pages.
+
+---
+
+### D. Deploy Langsung via Cloudflare Dashboard (Alternatif)
+
+Jika ingin build langsung di antarmuka Cloudflare:
 1. Buka **Cloudflare Dashboard** -> **Workers & Pages** -> **Create** -> **Import a repository**.
-2. Pilih repository `oktaamyid/Logicodix` dan branch production **`main`** (atau **`staging`** untuk preview).
-3. Atur konfigurasi build:
-   - **Build command**: `pnpm run build:worker` *(atau: `pnpm dlx @opennextjs/cloudflare build` — pastikan mencantumkan scope `@opennextjs/`)*
+2. Pilih repository `oktaamyid/Logicodix` dan branch production **`main`**.
+3. Pastikan konfigurasi build:
+   - **Build command**: `pnpm run build:worker` *(jangan gunakan `pnpm dlx opennextjs-cloudflare build`)*
    - **Deploy command**: `pnpm dlx wrangler deploy`
 4. Masukkan seluruh environment variables dari `.env.example` di menu **Settings -> Variables and Secrets**.
 5. **Penting untuk Google OAuth & Kamera**:
