@@ -159,20 +159,11 @@ export function BarcodeScannerModal({
         });
         scannerInstanceRef.current = scanner;
 
-        // Konfigurasi target kamera dengan preferensi resolusi HD & fokus otomatis
+        // Konfigurasi target kamera: html5-qrcode mengharuskan tepat 1 key untuk argumen pertama
+        // (string cameraId atau { facingMode: "environment" | "user" } atau { deviceId: "..." })
         const cameraConfig = selectedCameraId
-          ? {
-              deviceId: { exact: selectedCameraId },
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-              focusMode: "continuous",
-            }
-          : {
-              facingMode: "environment",
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-              focusMode: "continuous",
-            };
+          ? selectedCameraId
+          : { facingMode: "environment" };
 
         await scanner.start(
           cameraConfig,
@@ -187,6 +178,12 @@ export function BarcodeScannerModal({
             },
             aspectRatio: 1.333334,
             disableFlip: false,
+            videoConstraints: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              facingMode: selectedCameraId ? undefined : "environment",
+              deviceId: selectedCameraId ? { exact: selectedCameraId } : undefined,
+            },
           },
           (decodedText: string) => {
             const cleanCode = decodedText.trim();
