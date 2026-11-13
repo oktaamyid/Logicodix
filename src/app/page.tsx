@@ -332,7 +332,7 @@ export default function HomePage() {
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-2 font-semibold text-foreground">
             <Store className="h-4 w-4 text-primary" />
-            <span>Niagarupa</span>
+            Niagarupa <span className="text-gray-700">&copy; {new Date().getFullYear()}. Biar gak kena SP Group.</span>
           </div>
           <div className="flex flex-wrap items-center gap-6">
             <Link href="#demo" className="hover:text-foreground">
