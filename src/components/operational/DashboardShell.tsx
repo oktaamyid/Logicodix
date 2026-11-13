@@ -97,21 +97,21 @@ export function DashboardShell({
 
   const navGroups: NavGroup[] = [
     {
-      label: "Operasional & Inventori",
+      label: "Operasional & Stok",
       items: [
         {
           href: "/dashboard/operational/pos",
-          label: "Kasir (Smart POS)",
+          label: "Kasir Toko",
           icon: ShoppingCart,
         },
         {
           href: "/dashboard/operational/products",
-          label: "Katalog Produk & HPP",
+          label: "Daftar Produk & Modal",
           icon: Package,
         },
         {
           href: "/dashboard/operational/inventory",
-          label: "Mutasi Stok & Opname",
+          label: "Catatan Stok Gudang",
           icon: Layers,
         },
       ],
@@ -132,7 +132,7 @@ export function DashboardShell({
       ],
     },
     {
-      label: "Keuangan & Analitik",
+      label: "Keuangan & Laporan",
       items: [
         {
           href: "/dashboard/management/overview",
@@ -146,7 +146,7 @@ export function DashboardShell({
         },
         {
           href: "/dashboard/management/analytics",
-          label: "Analitik & Titik Impas",
+          label: "Laporan Penjualan & Stok",
           icon: TrendingUp,
         },
       ],

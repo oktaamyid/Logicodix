@@ -47,10 +47,10 @@ export function BusinessSmartInsights({
         </div>
         <div>
           <h3 className="text-base font-bold text-foreground">
-            Rekomendasi Aksi Inventori & Arus Kas
+            Saran Langkah Praktis untuk Toko Anda
           </h3>
           <p className="text-xs text-muted-foreground">
-            Saran taktis berbasis data riil transaksi dan perputaran stok toko Anda.
+            Rekomendasi otomatis berdasarkan catatan penjualan dan sisa stok barang Anda.
           </p>
         </div>
       </div>
@@ -61,28 +61,28 @@ export function BusinessSmartInsights({
           <div className="p-4 rounded-xl border border-rose-100 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/20 space-y-2">
             <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-semibold text-xs">
               <PackageOpen className="h-4 w-4" />
-              <span>Likuidasi Modal Stok Tertahan</span>
+              <span>Uang Modal Tertahan di Barang Belum Laku</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Terdapat modal sebesar{" "}
+              Ada uang modal sebesar{" "}
               <strong className="text-rose-600 dark:text-rose-300">
                 {formatIDR(totalDeadstockCapital)}
               </strong>{" "}
-              yang tertahan pada {deadstock.length} produk mati (contoh:{" "}
+              yang tertahan pada {deadstock.length} barang yang belum laku (contoh:{" "}
               <strong>{deadstock[0].name}</strong>).
             </p>
             <div className="text-xs text-foreground font-medium bg-background/80 dark:bg-background/40 p-2.5 rounded-lg border border-rose-200/60 dark:border-rose-900/60">
-              <strong>Saran Aksi:</strong> Buat paket bundel promo hemat atau tawarkan potongan diskon khusus di etalase toko untuk memutar kembali arus kas.
+              <strong>Saran Aksi:</strong> Buat paket promo hemat atau berikan potongan harga di etalase toko agar barang terjual dan uang modal kembali berputar.
             </div>
           </div>
         ) : (
           <div className="p-4 rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 space-y-1">
             <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold text-xs">
               <TrendingUp className="h-4 w-4" />
-              <span>Efisiensi Inventori Sangat Sehat</span>
+              <span>Perputaran Barang Sangat Sehat</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Tidak ada produk deadstock yang menahan modal operasional. Perputaran katalog Anda berjalan sangat optimal.
+              Tidak ada barang menumpuk yang menahan modal usaha. Semua barang terjual dengan baik.
             </p>
           </div>
         )}
@@ -92,7 +92,7 @@ export function BusinessSmartInsights({
           <div className="p-4 rounded-xl border border-amber-100 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20 space-y-2">
             <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-semibold text-xs">
               <AlertTriangle className="h-4 w-4" />
-              <span>Pencegahan Kehilangan Penjualan (Stockout)</span>
+              <span>Cegah Kehabisan Stok Barang</span>
             </div>
             <p className="text-xs text-muted-foreground">
               Produk <strong>{restockAlerts[0].name}</strong> diperkirakan akan

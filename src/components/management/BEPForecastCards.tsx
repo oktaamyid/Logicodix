@@ -61,10 +61,10 @@ export function BEPForecastCards({
         <div className="flex items-center justify-between border-b pb-3">
           <div>
             <h3 className="text-base font-bold text-foreground">
-              Titik Impas Usaha (Break-Even Point)
+              Target Balik Modal (Titik Impas)
             </h3>
             <p className="text-xs text-muted-foreground">
-              Target minimum penjualan untuk menutup seluruh beban operasional tetap.
+              Batas minimal penjualan agar seluruh biaya operasional (sewa, listrik, gaji) tertutup.
             </p>
           </div>
           <span
@@ -74,32 +74,32 @@ export function BEPForecastCards({
                 : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
             }`}
           >
-            {isBEPAchieved ? "Target BEP Tercapai" : "Menuju BEP"}
+            {isBEPAchieved ? "Sudah Balik Modal" : "Belum Balik Modal"}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="p-3 rounded-lg bg-muted/40 space-y-1">
             <span className="text-[11px] font-medium text-muted-foreground">
-              Target Omzet Impas
+              Minimal Omzet agar Tidak Rugi
             </span>
             <div className="text-lg font-bold text-foreground">
               {formatIDR(bepRevenueNeeded)}
             </div>
             <p className="text-[10px] text-muted-foreground">
-              Beban: {formatIDR(totalExpense)}
+              Total biaya toko: {formatIDR(totalExpense)}
             </p>
           </div>
 
           <div className="p-3 rounded-lg bg-muted/40 space-y-1">
             <span className="text-[11px] font-medium text-muted-foreground">
-              Volume Pesanan Dibutuhkan
+              Minimal Jumlah Transaksi
             </span>
             <div className="text-lg font-bold text-foreground">
-              {bepOrdersNeeded > 0 ? `${bepOrdersNeeded} Pesanan` : "-"}
+              {bepOrdersNeeded > 0 ? `${bepOrdersNeeded} Transaksi` : "-"}
             </div>
             <p className="text-[10px] text-muted-foreground">
-              Saat ini: {totalOrders} pesanan selesai
+              Sudah tercatat: {totalOrders} transaksi selesai
             </p>
           </div>
         </div>
@@ -107,7 +107,7 @@ export function BEPForecastCards({
         {/* Progress Bar BEP */}
         <div className="space-y-1.5">
           <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">Pencapaian Omzet Menuju Titik Impas</span>
+            <span className="text-muted-foreground">Perkembangan Menuju Balik Modal</span>
             <span className="font-bold text-foreground">{bepProgressPercent}%</span>
           </div>
           <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
@@ -126,33 +126,33 @@ export function BEPForecastCards({
         <div className="flex items-center justify-between border-b pb-3">
           <div>
             <h3 className="text-base font-bold text-foreground">
-              Proyeksi Bulan Depan (Forecast)
+              Perkiraan Pemasukan Bulan Depan
             </h3>
             <p className="text-xs text-muted-foreground">
-              Estimasi omzet dan laba bersih berdasarkan laju penjualan harian saat ini.
+              Perkiraan omzet dan keuntungan bersih jika penjualan harian berjalan seperti sekarang.
             </p>
           </div>
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-            Estimasi Laju 30 Hari
+            Perkiraan 30 Hari
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="p-3 rounded-lg bg-muted/40 space-y-1">
             <span className="text-[11px] font-medium text-muted-foreground">
-              Estimasi Omzet Penjualan
+              Perkiraan Total Penjualan
             </span>
             <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
               {formatIDR(projectedRevenueNextMonth)}
             </div>
             <p className="text-[10px] text-muted-foreground">
-              Laju harian: {formatIDR(dailyRunRate)}/hari
+              Rata-rata per hari: {formatIDR(dailyRunRate)}/hari
             </p>
           </div>
 
           <div className="p-3 rounded-lg bg-muted/40 space-y-1">
             <span className="text-[11px] font-medium text-muted-foreground">
-              Estimasi Laba Bersih
+              Perkiraan Untung Bersih
             </span>
             <div
               className={`text-lg font-bold ${
@@ -164,16 +164,16 @@ export function BEPForecastCards({
               {formatIDR(projectedProfitNextMonth)}
             </div>
             <p className="text-[10px] text-muted-foreground">
-              Berdasarkan margin {profitMarginPercent}%
+              Dari tingkat untung {profitMarginPercent}%
             </p>
           </div>
         </div>
 
         <div className="p-3 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 text-xs text-muted-foreground">
-          <strong>Catatan Proyeksi:</strong>{" "}
+          <strong>Kesimpulan:</strong>{" "}
           {projectedProfitNextMonth > 0
-            ? "Arus kas usaha Anda diproyeksikan mencetak surplus positif jika tren penjualan harian dapat dipertahankan."
-            : "Usaha membutuhkan kenaikan penjualan atau efisiensi biaya beban operasional agar terhindar dari potensi defisit."}
+            ? "Jika penjualan harian tetap terjaga, toko Anda diperkirakan mendapat keuntungan bersih bulan depan."
+            : "Penjualan perlu ditingkatkan atau biaya pengeluaran toko perlu dihemat agar tidak merugi bulan depan."}
         </div>
       </div>
     </div>

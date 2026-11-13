@@ -52,10 +52,10 @@ export function InventoryAnalyticsCards({
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">
-              Produk Terlaris (Fast-Moving)
+              Produk Paling Laris
             </h3>
             <p className="text-xs text-muted-foreground">
-              Perputaran barang paling cepat
+              Barang yang paling banyak dibeli pelanggan
             </p>
           </div>
         </div>
@@ -99,17 +99,17 @@ export function InventoryAnalyticsCards({
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">
-              Stok Mati (Deadstock)
+              Barang Belum Laku
             </h3>
             <p className="text-xs text-muted-foreground">
-              0 Penjualan: Modal tertahan di gudang
+              0 Penjualan: Uang modal tertahan di gudang
             </p>
           </div>
         </div>
 
         {deadstock.length === 0 ? (
-          <div className="text-center py-6 text-emerald-600 dark:text-emerald-400 text-xs border border-dashed rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20">
-            Hebat! Tidak terdeteksi stok mati tanpa penjualan.
+          <div className="text-center py-6 text-emerald-700 dark:text-emerald-400 text-xs border border-dashed rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20">
+            Semua barang di toko Anda tercatat laku terjual.
           </div>
         ) : (
           <div className="space-y-3">
@@ -144,17 +144,17 @@ export function InventoryAnalyticsCards({
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">
-              Peringatan Restock Segera
+              Barang Perlu Segera Ditambah
             </h3>
             <p className="text-xs text-muted-foreground">
-              Kritis menjelang kehabisan stok barang
+              Stok menipis dan berisiko habis
             </p>
           </div>
         </div>
 
         {restockAlerts.length === 0 ? (
-          <div className="text-center py-6 text-emerald-600 dark:text-emerald-400 text-xs border border-dashed rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20">
-            Semua level inventori berada dalam batas aman.
+          <div className="text-center py-6 text-emerald-700 dark:text-emerald-400 text-xs border border-dashed rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20">
+            Semua jumlah stok barang masih aman.
           </div>
         ) : (
           <div className="space-y-3">

@@ -66,14 +66,14 @@ export default async function AnalyticsPage(props: {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold tracking-tight text-foreground">
-              Analitik Penjualan & Optimasi Bisnis
+              Laporan Penjualan & Kesehatan Stok
             </h2>
             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
               {storeName}
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Wawasan performa penjualan, deteksi perputaran barang fast-moving, peringatan deadstock, dan proyeksi restock.
+            Pantau barang paling laris, barang yang lama belum terjual, perkiraan omzet, dan kapan stok perlu ditambah.
           </p>
         </div>
 
@@ -119,7 +119,7 @@ export default async function AnalyticsPage(props: {
         <div className="rounded-xl border bg-card p-5 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-semibold uppercase tracking-wider">
-              Rata-rata Order (AOV)
+              Rata-rata Nilai Belanja
             </span>
             <div className="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center">
               <BarChart3 className="h-4 w-4" />
@@ -129,14 +129,14 @@ export default async function AnalyticsPage(props: {
             {formatIDR(analytics.averageOrderValue)}
           </div>
           <p className="text-xs text-muted-foreground">
-            Nilai belanja per transaksi pelanggan
+            Rata-rata uang belanja per 1 kali transaksi
           </p>
         </div>
 
         <div className="rounded-xl border bg-card p-5 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-semibold uppercase tracking-wider">
-              Laba Kotor (Gross Profit)
+              Untung Kotor
             </span>
             <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-600 flex items-center justify-center">
               <TrendingUp className="h-4 w-4" />
@@ -146,7 +146,7 @@ export default async function AnalyticsPage(props: {
             {formatIDR(analytics.grossProfit)}
           </div>
           <p className="text-xs text-muted-foreground">
-            Total omzet dikurangi total modal (HPP)
+            Total pemasukan dikurangi harga modal barang
           </p>
         </div>
       </div>

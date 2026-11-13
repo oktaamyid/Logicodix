@@ -248,26 +248,26 @@ export function clusterProductsML(
 
       let cluster: ProductClusterLabel = "Standard";
       let recommendedAction =
-        "Pertahankan ketersediaan stok dan tampilkan di posisi standar katalog.";
+        "Pertahankan jumlah stok seperti biasa.";
 
       if (e.unitsSold > 0 && e.stockCoverageRatio <= 1.2) {
         cluster = "Stockout Risk";
         recommendedAction =
-          "Segera lakukan pemesanan ulang (restock) sebelum stok habis di kasir.";
+          "Segera tambah stok barang sebelum habis terjual di kasir.";
       } else if (normVelocity >= 0.5 && e.marginRatio >= 0.3) {
         cluster = "Star Performer";
         recommendedAction =
-          "Prioritaskan di etalase utama dan jadikan produk jangkar paket bundel.";
+          "Pertahankan stok dan tampilkan di bagian atas etalase atau jadikan paket promo.";
       } else if (normVelocity >= 0.5) {
         cluster = "Volume Driver";
         recommendedAction =
-          "Penjualan tinggi dengan margin tipis; pertahankan volume atau kombinasikan dengan produk margin tinggi.";
+          "Barang cepat laku tetapi untungnya tipis; cocok digabung dengan produk lain yang untungnya lebih besar.";
       } else if (e.unitsSold === 0 && e.tiedUpCapital > 0) {
         cluster = "Capital Trap";
         recommendedAction =
           safeMaxDiscountPercent >= 10
-            ? `Berikan promo likuidasi maksimal ${safeMaxDiscountPercent}% untuk mencairkan modal tanpa rugi HPP.`
-            : "Tawarkan sebagai bonus pembelian minimum agar stok gudang segera berputar.";
+            ? `Beri diskon maksimal ${safeMaxDiscountPercent}% agar barang terjual dan uang modal kembali berputar.`
+            : "Tawarkan sebagai bonus belanja minimal agar barang di gudang segera berkurang.";
       }
 
       return {
