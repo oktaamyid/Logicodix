@@ -1021,9 +1021,9 @@ export function PosTerminalView({
       <BarcodeScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
-        continuous={true}
+        continuous={false}
         title="Scan Barcode Kasir"
-        description="Arahkan kamera ke barcode barang. Produk otomatis masuk ke keranjang."
+        description="Arahkan kamera ke barcode barang. Produk otomatis masuk ke keranjang dan pemindai langsung tertutup."
         onScanSuccess={(decodedText) => handleBarcodeMatch(decodedText, true)}
       />
 
