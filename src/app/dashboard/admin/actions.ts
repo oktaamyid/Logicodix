@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { stores, products, orders, type Store } from "@/lib/db/schema";
+import { stores, storeMembers, products, orders, type Store } from "@/lib/db/schema";
 import { verifyPlatformAdmin } from "@/lib/supabase/auth-guard";
 import {
   actionSuccess,
@@ -21,7 +21,14 @@ export interface PlatformStoreRow {
   isActive: boolean;
   createdAt: Date;
   productCount: number;
+  memberCount: number;
   completedOrderCount: number;
+  gmvAmount: number;
+}
+
+export interface SubsectorSummaryItem {
+  subsector: string;
+  storeCount: number;
   gmvAmount: number;
 }
 
@@ -29,9 +36,11 @@ export interface PlatformAdminOverview {
   adminEmail: string;
   totalStores: number;
   activeStores: number;
+  totalMembers: number;
   totalProducts: number;
   totalCompletedOrders: number;
   totalEcosystemGmv: number;
+  subsectorSummary: SubsectorSummaryItem[];
   stores: PlatformStoreRow[];
 }
 
@@ -46,7 +55,7 @@ export async function getPlatformAdminOverviewAction(): Promise<
     return actionError(adminCheck.error, "FORBIDDEN_ADMIN");
   }
 
-  const [allStores, allProducts, allOrders] = await Promise.all([
+  const [allStores, allProducts, allOrders, allMembers] = await Promise.all([
     db.select().from(stores).orderBy(desc(stores.createdAt)),
     db
       .select({
@@ -62,6 +71,12 @@ export async function getPlatformAdminOverviewAction(): Promise<
         totalAmount: orders.totalAmount,
       })
       .from(orders),
+    db
+      .select({
+        id: storeMembers.id,
+        storeId: storeMembers.storeId,
+      })
+      .from(storeMembers),
   ]);
 
   const productCountByStore = new Map<string, number>();
@@ -69,6 +84,14 @@ export async function getPlatformAdminOverviewAction(): Promise<
     productCountByStore.set(
       prod.storeId,
       (productCountByStore.get(prod.storeId) ?? 0) + 1
+    );
+  }
+
+  const memberCountByStore = new Map<string, number>();
+  for (const mbr of allMembers) {
+    memberCountByStore.set(
+      mbr.storeId,
+      (memberCountByStore.get(mbr.storeId) ?? 0) + 1
     );
   }
 
@@ -102,17 +125,38 @@ export async function getPlatformAdminOverviewAction(): Promise<
     isActive: st.isActive,
     createdAt: st.createdAt,
     productCount: productCountByStore.get(st.id) ?? 0,
+    memberCount: memberCountByStore.get(st.id) ?? 0,
     completedOrderCount: orderCountByStore.get(st.id) ?? 0,
     gmvAmount: gmvByStore.get(st.id) ?? 0,
   }));
+
+  const subsectorMap = new Map<string, { storeCount: number; gmvAmount: number }>();
+  for (const row of storeRows) {
+    const cur = subsectorMap.get(row.subsector) ?? { storeCount: 0, gmvAmount: 0 };
+    cur.storeCount += 1;
+    cur.gmvAmount += row.gmvAmount;
+    subsectorMap.set(row.subsector, cur);
+  }
+
+  const subsectorSummary: SubsectorSummaryItem[] = Array.from(
+    subsectorMap.entries()
+  )
+    .map(([subsector, stats]) => ({
+      subsector,
+      storeCount: stats.storeCount,
+      gmvAmount: stats.gmvAmount,
+    }))
+    .sort((a, b) => b.storeCount - a.storeCount || b.gmvAmount - a.gmvAmount);
 
   return actionSuccess({
     adminEmail: adminCheck.userEmail,
     totalStores: allStores.length,
     activeStores: allStores.filter((s) => s.isActive).length,
+    totalMembers: allMembers.length,
     totalProducts: allProducts.length,
     totalCompletedOrders,
     totalEcosystemGmv,
+    subsectorSummary,
     stores: storeRows,
   });
 }

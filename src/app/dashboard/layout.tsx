@@ -14,6 +14,7 @@ export default async function DashboardLayout({
   const storeSlug = activeRes.success ? activeRes.data.storeSlug : "";
   const userEmail = activeRes.success ? activeRes.data.userEmail : "";
   const userRole = activeRes.success ? activeRes.data.userRole : "owner";
+  const hasStore = activeRes.success ? Boolean(activeRes.data.hasStore) : false;
 
   return (
     <DashboardShell
@@ -21,6 +22,7 @@ export default async function DashboardLayout({
       storeSlug={storeSlug}
       userEmail={userEmail}
       userRole={userRole}
+      hasStore={hasStore}
     >
       {children}
     </DashboardShell>

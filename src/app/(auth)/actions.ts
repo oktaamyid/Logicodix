@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
+import { isPlatformAdminEmail } from "@/lib/supabase/auth-guard";
 import { db } from "@/lib/db";
 import { stores, storeMembers } from "@/lib/db/schema";
 import {
@@ -49,6 +50,10 @@ export async function loginAction(
       error?.message || "Email atau password yang Anda masukkan salah",
       "AUTH_FAILED"
     );
+  }
+
+  if (isPlatformAdminEmail(data.user.email)) {
+    return actionSuccess({ redirectTo: "/dashboard/admin" });
   }
 
   // Periksa apakah pengguna sudah memiliki profil toko

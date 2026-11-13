@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
+import { isPlatformAdminEmail } from "@/lib/supabase/auth-guard";
 import { db } from "@/lib/db";
 import {
   stores,
@@ -44,6 +45,7 @@ export async function getActiveMerchantStore(): Promise<
     storeSlug: string;
     userEmail: string;
     userRole: "owner" | "cashier" | "staff" | "platform_admin";
+    hasStore?: boolean;
   }>
 > {
   const supabase = await createClient();
@@ -60,6 +62,7 @@ export async function getActiveMerchantStore(): Promise<
   }
 
   const userEmail = user.email?.toLowerCase() || "";
+  const isAdmin = isPlatformAdminEmail(userEmail);
 
   // 1. Cek keanggotaan store_members
   const member = await db.query.storeMembers.findFirst({
@@ -76,10 +79,8 @@ export async function getActiveMerchantStore(): Promise<
         storeName: store.name,
         storeSlug: store.slug,
         userEmail,
-        userRole:
-          userEmail === "superadmin.niagarupa@gmail.com"
-            ? "platform_admin"
-            : member.role,
+        userRole: isAdmin ? "platform_admin" : member.role,
+        hasStore: true,
       });
     }
   }
@@ -95,10 +96,20 @@ export async function getActiveMerchantStore(): Promise<
       storeName: ownerStore.name,
       storeSlug: ownerStore.slug,
       userEmail,
-      userRole:
-        userEmail === "superadmin.niagarupa@gmail.com"
-          ? "platform_admin"
-          : "owner",
+      userRole: isAdmin ? "platform_admin" : "owner",
+      hasStore: true,
+    });
+  }
+
+  // 3. Jika akun adalah Platform Admin murni tanpa toko UMKM
+  if (isAdmin) {
+    return actionSuccess({
+      storeId: "",
+      storeName: "Niagarupa Platform",
+      storeSlug: "",
+      userEmail,
+      userRole: "platform_admin",
+      hasStore: false,
     });
   }
 

@@ -28,6 +28,7 @@ interface DashboardShellProps {
   storeSlug: string;
   userEmail: string;
   userRole: "owner" | "cashier" | "staff" | "platform_admin";
+  hasStore?: boolean;
 }
 
 interface NavGroup {
@@ -67,15 +68,28 @@ export function DashboardShell({
   storeSlug,
   userEmail,
   userRole,
+  hasStore = false,
 }: DashboardShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggingOut, startLogout] = useTransition();
+  const [dashboardMode, setDashboardMode] = useState<"admin" | "merchant">(
+    userRole === "platform_admin" && (!hasStore || pathname.startsWith("/dashboard/admin"))
+      ? "admin"
+      : "merchant"
+  );
 
   useEffect(() => {
     setMobileMenuOpen(false);
-  }, [pathname]);
+    if (userRole === "platform_admin") {
+      if (!hasStore || pathname.startsWith("/dashboard/admin")) {
+        setDashboardMode("admin");
+      } else {
+        setDashboardMode("merchant");
+      }
+    }
+  }, [pathname, userRole, hasStore]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -95,25 +109,53 @@ export function DashboardShell({
     });
   }
 
-  const navGroups: NavGroup[] = [
+  const isAdminMode =
+    userRole === "platform_admin" && (!hasStore || dashboardMode === "admin");
+
+  const adminNavGroups: NavGroup[] = [
+    {
+      label: "Administrasi Platform",
+      items: [
+        {
+          href: "/dashboard/admin",
+          label: "Panel Admin Platform",
+          icon: ShieldCheck,
+        },
+      ],
+    },
+  ];
+
+  const merchantNavGroups: NavGroup[] = [
     {
       label: "Operasional & Stok",
       items: [
-        {
-          href: "/dashboard/operational/pos",
-          label: "Kasir Toko",
-          icon: ShoppingCart,
-        },
-        {
-          href: "/dashboard/operational/products",
-          label: "Daftar Produk & Modal",
-          icon: Package,
-        },
-        {
-          href: "/dashboard/operational/inventory",
-          label: "Catatan Stok Gudang",
-          icon: Layers,
-        },
+        ...(userRole === "owner" ||
+        userRole === "cashier" ||
+        userRole === "platform_admin"
+          ? [
+              {
+                href: "/dashboard/operational/pos",
+                label: "Kasir Toko",
+                icon: ShoppingCart,
+              },
+            ]
+          : []),
+        ...(userRole === "owner" ||
+        userRole === "staff" ||
+        userRole === "platform_admin"
+          ? [
+              {
+                href: "/dashboard/operational/products",
+                label: "Daftar Produk & Modal",
+                icon: Package,
+              },
+              {
+                href: "/dashboard/operational/inventory",
+                label: "Catatan Stok Gudang",
+                icon: Layers,
+              },
+            ]
+          : []),
       ],
     },
     {
@@ -124,53 +166,56 @@ export function DashboardShell({
           label: "Pesanan Masuk",
           icon: Inbox,
         },
-        {
-          href: "/dashboard/orders/vouchers",
-          label: "Kupon Diskon Toko",
-          icon: TicketPercent,
-        },
-      ],
-    },
-    {
-      label: "Keuangan & Laporan",
-      items: [
-        {
-          href: "/dashboard/management/overview",
-          label: "Ringkasan Usaha",
-          icon: LayoutDashboard,
-        },
-        {
-          href: "/dashboard/management/finance",
-          label: "Buku Kas & Laba Rugi",
-          icon: Wallet,
-        },
-        {
-          href: "/dashboard/management/analytics",
-          label: "Laporan Penjualan & Stok",
-          icon: TrendingUp,
-        },
-      ],
-    },
-    {
-      label: "Konfigurasi & Otorisasi",
-      items: [
-        {
-          href: "/dashboard/settings",
-          label: "Pengaturan & Tim Toko",
-          icon: Settings,
-        },
-        ...(userRole === "platform_admin"
+        ...(userRole === "owner" ||
+        userRole === "cashier" ||
+        userRole === "platform_admin"
           ? [
               {
-                href: "/dashboard/admin",
-                label: "Panel Admin Platform",
-                icon: ShieldCheck,
+                href: "/dashboard/orders/vouchers",
+                label: "Kupon Diskon Toko",
+                icon: TicketPercent,
               },
             ]
           : []),
       ],
     },
-  ];
+    ...(userRole === "owner" || userRole === "platform_admin"
+      ? [
+          {
+            label: "Keuangan & Laporan",
+            items: [
+              {
+                href: "/dashboard/management/overview",
+                label: "Ringkasan Usaha",
+                icon: LayoutDashboard,
+              },
+              {
+                href: "/dashboard/management/finance",
+                label: "Buku Kas & Laba Rugi",
+                icon: Wallet,
+              },
+              {
+                href: "/dashboard/management/analytics",
+                label: "Laporan Penjualan & Stok",
+                icon: TrendingUp,
+              },
+            ],
+          },
+          {
+            label: "Konfigurasi & Otorisasi",
+            items: [
+              {
+                href: "/dashboard/settings",
+                label: "Pengaturan & Tim Toko",
+                icon: Settings,
+              },
+            ],
+          },
+        ]
+      : []),
+  ].filter((group) => group.items.length > 0);
+
+  const navGroups = isAdminMode ? adminNavGroups : merchantNavGroups;
 
   const roleBadge = ROLE_BADGE_MAP[userRole];
 
@@ -196,21 +241,57 @@ export function DashboardShell({
         </button>
       </div>
 
-      {/* Store Identity Card */}
-      <div className="border-b border-border bg-secondary/40 px-5 py-3.5">
-        <div className="flex items-center justify-between gap-2">
-          <p className="truncate text-sm font-bold text-foreground">
-            {storeName}
+      {/* Store / Platform Identity Card */}
+      <div className="border-b border-border bg-secondary/40 px-5 py-3.5 space-y-2.5">
+        <div>
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-sm font-bold text-foreground">
+              {isAdminMode ? "Niagarupa Platform" : storeName}
+            </p>
+            <span
+              className={`shrink-0 rounded px-2 py-0.5 text-[11px] font-semibold ${roleBadge.className}`}
+            >
+              {roleBadge.text}
+            </span>
+          </div>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground font-mono">
+            {userEmail || `/store/${storeSlug}`}
           </p>
-          <span
-            className={`shrink-0 rounded px-2 py-0.5 text-[11px] font-semibold ${roleBadge.className}`}
-          >
-            {roleBadge.text}
-          </span>
         </div>
-        <p className="mt-0.5 truncate text-xs text-muted-foreground font-mono">
-          {userEmail || `/store/${storeSlug}`}
-        </p>
+
+        {/* 2 Mode Tampilan untuk Admin yang juga memiliki toko UMKM */}
+        {userRole === "platform_admin" && hasStore && (
+          <div className="grid grid-cols-2 gap-1 rounded-lg bg-background p-1 border border-border">
+            <button
+              type="button"
+              onClick={() => {
+                setDashboardMode("admin");
+                router.push("/dashboard/admin");
+              }}
+              className={`rounded-md px-2 py-1.5 text-[11px] font-semibold transition-colors ${
+                isAdminMode
+                  ? "bg-slate-900 text-white shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Mode Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDashboardMode("merchant");
+                router.push("/dashboard/management/overview");
+              }}
+              className={`rounded-md px-2 py-1.5 text-[11px] font-semibold transition-colors ${
+                !isAdminMode
+                  ? "bg-emerald-700 text-white shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Pemilik Toko
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Navigation Links */}

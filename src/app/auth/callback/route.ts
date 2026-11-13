@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
+import { isPlatformAdminEmail } from "@/lib/supabase/auth-guard";
 import { db } from "@/lib/db";
 import { storeMembers } from "@/lib/db/schema";
 
@@ -19,6 +20,10 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
+      if (isPlatformAdminEmail(data.user.email)) {
+        return NextResponse.redirect(`${origin}/dashboard/admin`);
+      }
+
       // Periksa apakah pengguna sudah memiliki toko di tabel store_members
       const memberRecord = await db.query.storeMembers.findFirst({
         where: eq(storeMembers.userId, data.user.id),

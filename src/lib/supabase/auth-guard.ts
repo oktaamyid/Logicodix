@@ -5,6 +5,14 @@ import { stores, storeMembers, type Store } from "@/lib/db/schema";
 
 export const PLATFORM_ADMIN_EMAILS = ["superadmin.niagarupa@gmail.com"];
 
+/**
+ * Memeriksa apakah alamat email termasuk dalam daftar Administrator Platform.
+ */
+export function isPlatformAdminEmail(email?: string | null): boolean {
+  if (!email) return false;
+  return PLATFORM_ADMIN_EMAILS.includes(email.trim().toLowerCase());
+}
+
 export type StoreAccessResult =
   | {
       authorized: true;

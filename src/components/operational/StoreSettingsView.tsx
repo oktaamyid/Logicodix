@@ -16,11 +16,15 @@ import {
   Share2,
   RefreshCw,
   Info,
+  UserPlus,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import {
   updateStoreSettingsAction,
   updateStoreMemberRoleAction,
+  addStoreMemberAction,
+  removeStoreMemberAction,
   type StoreSettingsBundle,
 } from "@/app/dashboard/settings/actions";
 import { CREATIVE_SUBSECTORS } from "@/lib/schemas/operational.schema";
@@ -90,6 +94,9 @@ export function StoreSettingsView({ initialData }: StoreSettingsViewProps) {
 
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
+
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [newMemberRole, setNewMemberRole] = useState<"cashier" | "staff">("cashier");
 
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -174,6 +181,54 @@ export function StoreSettingsView({ initialData }: StoreSettingsViewProps) {
       setFeedback({
         type: "success",
         message: "Peran anggota tim berhasil diperbarui.",
+      });
+      router.refresh();
+    });
+  }
+
+  function handleAddMember(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newMemberEmail.trim()) return;
+    setFeedback(null);
+    startTransition(async () => {
+      const res = await addStoreMemberAction({
+        storeId: store.id,
+        email: newMemberEmail.trim(),
+        role: newMemberRole,
+      });
+
+      if (!res.success) {
+        setFeedback({ type: "error", message: res.error });
+        return;
+      }
+
+      setNewMemberEmail("");
+      setFeedback({
+        type: "success",
+        message: `Karyawan "${res.data.email || newMemberEmail}" berhasil ditambahkan sebagai ${
+          newMemberRole === "cashier" ? "Kasir POS" : "Staf Gudang"
+        }.`,
+      });
+      router.refresh();
+    });
+  }
+
+  function handleRemoveMember(memberId: string, label: string) {
+    setFeedback(null);
+    startTransition(async () => {
+      const res = await removeStoreMemberAction({
+        storeId: store.id,
+        memberId,
+      });
+
+      if (!res.success) {
+        setFeedback({ type: "error", message: res.error });
+        return;
+      }
+
+      setFeedback({
+        type: "success",
+        message: `Akses tim untuk "${label}" telah dihapus.`,
       });
       router.refresh();
     });
@@ -423,49 +478,121 @@ export function StoreSettingsView({ initialData }: StoreSettingsViewProps) {
                   Belum ada anggota staf tambahan yang terdaftar pada toko ini.
                 </p>
               ) : (
-                members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-xs font-mono text-foreground truncate">
-                        UID: {member.userId.slice(0, 12)}...
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">
-                        Terdaftar{" "}
-                        {new Date(member.createdAt).toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </p>
+                members.map((member) => {
+                  const displayIdentity =
+                    member.fullName ||
+                    member.email ||
+                    `UID: ${member.userId.slice(0, 12)}...`;
+                  return (
+                    <div
+                      key={member.id}
+                      className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-foreground truncate">
+                          {displayIdentity}
+                        </p>
+                        {member.email && member.fullName && (
+                          <p className="text-[11px] font-mono text-muted-foreground truncate">
+                            {member.email}
+                          </p>
+                        )}
+                        <p className="text-[11px] text-muted-foreground">
+                          Terdaftar{" "}
+                          {new Date(member.createdAt).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                      {member.role === "owner" ? (
+                        <span className="inline-flex items-center rounded-md bg-slate-900 px-2 py-0.5 text-xs font-semibold text-white self-start sm:self-center">
+                          Pemilik Utama
+                        </span>
+                      ) : (
+                        <div className="flex items-center gap-1.5 self-start sm:self-center">
+                          <select
+                            aria-label="Ubah peran staf"
+                            disabled={!canEditStore || isPending}
+                            value={member.role}
+                            onChange={(e) =>
+                              handleRoleChange(
+                                member.id,
+                                e.target.value as "cashier" | "staff"
+                              )
+                            }
+                            className="min-h-[36px] rounded-lg border border-input bg-background px-2.5 py-1 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                          >
+                            <option value="cashier">Kasir POS</option>
+                            <option value="staff">Staf Gudang</option>
+                          </select>
+                          {canEditStore && (
+                            <button
+                              type="button"
+                              disabled={isPending}
+                              onClick={() =>
+                                handleRemoveMember(member.id, displayIdentity)
+                              }
+                              aria-label={`Hapus akses ${displayIdentity}`}
+                              title="Hapus akses karyawan"
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors disabled:opacity-50"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {member.role === "owner" ? (
-                      <span className="inline-flex items-center rounded-md bg-slate-900 px-2 py-0.5 text-xs font-semibold text-white self-start sm:self-center">
-                        Pemilik Utama
-                      </span>
-                    ) : (
-                      <select
-                        aria-label="Ubah peran staf"
-                        disabled={!canEditStore || isPending}
-                        value={member.role}
-                        onChange={(e) =>
-                          handleRoleChange(
-                            member.id,
-                            e.target.value as "cashier" | "staff"
-                          )
-                        }
-                        className="min-h-[36px] rounded-lg border border-input bg-background px-2.5 py-1 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
-                      >
-                        <option value="cashier">Kasir POS</option>
-                        <option value="staff">Staf Gudang</option>
-                      </select>
-                    )}
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
+
+            {/* Form Tambah Karyawan / Hak Akses */}
+            {canEditStore && (
+              <form
+                onSubmit={handleAddMember}
+                className="pt-3 border-t border-border space-y-2.5"
+              >
+                <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <UserPlus className="h-3.5 w-3.5 text-emerald-700" />
+                  <span>Tambah Karyawan / Hak Akses Baru</span>
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="email"
+                    required
+                    value={newMemberEmail}
+                    onChange={(e) => setNewMemberEmail(e.target.value)}
+                    placeholder="Email akun karyawan..."
+                    className="flex-1 min-h-[40px] rounded-lg border border-input bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <select
+                    aria-label="Pilih peran karyawan baru"
+                    value={newMemberRole}
+                    onChange={(e) =>
+                      setNewMemberRole(e.target.value as "cashier" | "staff")
+                    }
+                    className="min-h-[40px] rounded-lg border border-input bg-background px-2.5 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="cashier">Kasir POS</option>
+                    <option value="staff">Staf Gudang</option>
+                  </select>
+                  <button
+                    type="submit"
+                    disabled={isPending || !newMemberEmail.trim()}
+                    className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-800 transition-colors disabled:opacity-50"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    <span>Tambah</span>
+                  </button>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Pastikan karyawan sudah mendaftar akun di Niagarupa menggunakan email tersebut.
+                </p>
+              </form>
+            )}
 
             {/* Quick Role Guide */}
             <div className="rounded-lg bg-secondary/50 p-3 text-[11px] text-muted-foreground space-y-1">

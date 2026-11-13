@@ -13,6 +13,9 @@ import {
   Search,
   CheckCircle2,
   AlertCircle,
+  Download,
+  Users,
+  MessageCircle,
 } from "lucide-react";
 import {
   toggleStoreActiveAdminAction,
@@ -35,12 +38,18 @@ export function PlatformAdminView({ initialData }: PlatformAdminViewProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "suspended">("all");
+  const [subsectorFilter, setSubsectorFilter] = useState<string>("all");
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
 
   const filteredStores = initialData.stores.filter((store) => {
+    if (statusFilter === "active" && !store.isActive) return false;
+    if (statusFilter === "suspended" && store.isActive) return false;
+    if (subsectorFilter !== "all" && store.subsector !== subsectorFilter) return false;
+
     const q = searchQuery.trim().toLowerCase();
     if (!q) return true;
     return (
@@ -50,6 +59,44 @@ export function PlatformAdminView({ initialData }: PlatformAdminViewProps) {
       store.slug.toLowerCase().includes(q)
     );
   });
+
+  function handleExportCsv() {
+    const headers = [
+      "Nama Toko",
+      "Slug",
+      "Subsektor",
+      "Kota",
+      "WhatsApp",
+      "Status",
+      "Jumlah Produk",
+      "Jumlah Tim",
+      "Pesanan Lunas",
+      "Omzet GMV (IDR)",
+    ];
+    const rows = filteredStores.map((st) => [
+      `"${st.name.replace(/"/g, '""')}"`,
+      st.slug,
+      st.subsector,
+      `"${st.city.replace(/"/g, '""')}"`,
+      st.whatsappNumber,
+      st.isActive ? "Tayang Publik" : "Ditangguhkan",
+      st.productCount,
+      st.memberCount,
+      st.completedOrderCount,
+      st.gmvAmount,
+    ]);
+    const csvContent =
+      "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `mitra-umkm-niagarupa-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
 
   function handleToggleStore(storeId: string, nextStatus: boolean, name: string) {
     setFeedback(null);
@@ -92,14 +139,24 @@ export function PlatformAdminView({ initialData }: PlatformAdminViewProps) {
           </p>
         </div>
 
-        <Link
-          href="/explore"
-          target="_blank"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-secondary"
-        >
-          <span>Buka Direktori Publik</span>
-          <ExternalLink className="h-4 w-4 text-muted-foreground" />
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-secondary"
+          >
+            <Download className="h-4 w-4 text-emerald-700" />
+            <span>Ekspor CSV Mitra</span>
+          </button>
+          <Link
+            href="/explore"
+            target="_blank"
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-secondary"
+          >
+            <span>Buka Direktori Publik</span>
+            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+          </Link>
+        </div>
       </div>
 
       {/* Feedback Banner */}
@@ -152,7 +209,7 @@ export function PlatformAdminView({ initialData }: PlatformAdminViewProps) {
                 {initialData.totalStores}
               </p>
               <p className="mt-1 text-xs text-emerald-800 font-medium">
-                {initialData.activeStores} etalase aktif
+                {initialData.activeStores} aktif • {initialData.totalMembers} akun tim
               </p>
             </div>
           </div>
@@ -189,9 +246,49 @@ export function PlatformAdminView({ initialData }: PlatformAdminViewProps) {
         </div>
       </div>
 
+      {/* Distribusi Sektor Ekonomi Kreatif */}
+      {initialData.subsectorSummary.length > 0 && (
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-foreground">
+              Sebaran Subsektor Mitra UMKM
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              Klik subsektor untuk menyaring tabel mitra
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {initialData.subsectorSummary.map((item) => {
+              const isSelected = subsectorFilter === item.subsector;
+              return (
+                <button
+                  key={item.subsector}
+                  type="button"
+                  onClick={() =>
+                    setSubsectorFilter(isSelected ? "all" : item.subsector)
+                  }
+                  className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    isSelected
+                      ? "border-emerald-700 bg-emerald-50 text-emerald-900"
+                      : "border-border bg-background text-foreground hover:bg-secondary/60"
+                  }`}
+                >
+                  <span className="capitalize">
+                    {item.subsector.replace(/_/g, " ")}
+                  </span>
+                  <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">
+                    {item.storeCount} toko
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* Directory Moderation Table */}
       <section className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="flex flex-col gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-border p-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-base font-bold text-foreground">
               Daftar Mitra UMKM & Kurasi Direktori ({filteredStores.length})
@@ -202,16 +299,31 @@ export function PlatformAdminView({ initialData }: PlatformAdminViewProps) {
             </p>
           </div>
 
-          <div className="relative w-full sm:w-72">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="search"
-              aria-label="Cari nama toko, kota, atau subsektor"
-              placeholder="Cari nama toko atau kota..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full min-h-[44px] rounded-lg border border-input bg-background pl-9 pr-3.5 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <select
+              aria-label="Filter status direktori"
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as "all" | "active" | "suspended")
+              }
+              className="min-h-[44px] rounded-lg border border-input bg-background px-3 py-2 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="all">Semua Status</option>
+              <option value="active">Tayang Publik</option>
+              <option value="suspended">Ditangguhkan</option>
+            </select>
+
+            <div className="relative w-full sm:w-64">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="search"
+                aria-label="Cari nama toko, kota, atau subsektor"
+                placeholder="Cari nama toko atau kota..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full min-h-[44px] rounded-lg border border-input bg-background pl-9 pr-3.5 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
           </div>
         </div>
 
@@ -265,8 +377,19 @@ export function PlatformAdminView({ initialData }: PlatformAdminViewProps) {
                       <span className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-xs font-semibold capitalize text-foreground">
                         {st.subsector.replace(/_/g, " ")}
                       </span>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        {st.city} • WA: {st.whatsappNumber}
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <span>{st.city}</span>
+                        <span className="inline-flex items-center gap-1">
+                          <Users className="h-3 w-3" /> {st.memberCount} tim
+                        </span>
+                        <a
+                          href={`https://wa.me/${st.whatsappNumber.replace(/[^0-9]/g, "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-emerald-800 hover:underline font-medium"
+                        >
+                          <MessageCircle className="h-3 w-3" /> WA
+                        </a>
                       </div>
                     </td>
                     <td className="px-5 py-4 text-right font-mono font-medium text-foreground">
