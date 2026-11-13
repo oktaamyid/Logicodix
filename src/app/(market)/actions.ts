@@ -2,8 +2,9 @@
 
 import { db } from "@/lib/db";
 import { stores, creativeSubsectorEnum } from "@/lib/db/schema/core";
-import { products, categories } from "@/lib/db/schema/operational";
+import { products, categories, stockMovements } from "@/lib/db/schema/operational";
 import { orders, orderItems, vouchers } from "@/lib/db/schema/market";
+import { financialEntries } from "@/lib/db/schema/management";
 import {
   createPublicOrderSchema,
   updateOrderStatusSchema,
@@ -371,6 +372,7 @@ export async function getStoreOrdersAction(storeId: string) {
 
 /**
  * Update status pesanan UMKM di dashboard (/orders).
+ * Terintegrasi ke Domain 1 (pengurangan stok saat completed) dan Domain 3 (pembukuan buku kas otomatis).
  */
 export async function updateOrderStatusAction(
   rawInput: UpdateOrderStatusInput
@@ -382,15 +384,74 @@ export async function updateOrderStatusAction(
     }
     const { storeId, orderId, status } = parsed.data;
 
-    await db
-      .update(orders)
-      .set({
-        status,
-        completedAt: status === "completed" ? new Date() : null,
-      })
-      .where(and(eq(orders.id, orderId), eq(orders.storeId, storeId)));
+    // Ambil order saat ini
+    const existingOrder = await db.query.orders.findFirst({
+      where: and(eq(orders.id, orderId), eq(orders.storeId, storeId)),
+    });
+    if (!existingOrder) {
+      return actionError("Pesanan tidak ditemukan.");
+    }
+
+    const previousStatus = existingOrder.status;
+
+    // Jalankan update status dalam transaksi jika status berubah menjadi 'completed'
+    await db.transaction(async (tx) => {
+      await tx
+        .update(orders)
+        .set({
+          status,
+          completedAt: status === "completed" ? new Date() : null,
+        })
+        .where(and(eq(orders.id, orderId), eq(orders.storeId, storeId)));
+
+      // Jika pesanan beralih status ke COMPLETED dan sebelumnya belum pernah completed:
+      if (status === "completed" && previousStatus !== "completed") {
+        // 1. Dapatkan item pesanan
+        const items = await tx
+          .select()
+          .from(orderItems)
+          .where(eq(orderItems.orderId, orderId));
+
+        // 2. Kurangi stok produk dan rekam stock_movements (Domain 1 integration)
+        for (const item of items) {
+          const product = await tx.query.products.findFirst({
+            where: eq(products.id, item.productId),
+          });
+
+          if (product) {
+            const nextStock = Math.max(0, product.stockQuantity - item.quantity);
+            await tx
+              .update(products)
+              .set({ stockQuantity: nextStock, updatedAt: new Date() })
+              .where(eq(products.id, product.id));
+
+            await tx.insert(stockMovements).values({
+              storeId,
+              productId: product.id,
+              type: "sale_online",
+              quantityChange: -item.quantity,
+              previousStock: product.stockQuantity,
+              currentStock: nextStock,
+              referenceOrderId: orderId,
+              notes: `Penjualan Online Storefront (Pesanan ${existingOrder.orderNumber})`,
+            });
+          }
+        }
+
+        // 3. Catat otomatis ke buku kas keuangan (Domain 3 integration)
+        await tx.insert(financialEntries).values({
+          storeId,
+          type: "income",
+          amount: existingOrder.totalAmount,
+          description: `Pemasukan Pesanan Online ${existingOrder.orderNumber} (${existingOrder.customerName})`,
+          referenceOrderId: orderId,
+        });
+      }
+    });
 
     revalidatePath("/orders");
+    revalidatePath("/management/finance");
+    revalidatePath("/operational/inventory");
     return actionSuccess(true);
   } catch (error) {
     console.error("[updateOrderStatusAction] Error:", error);
@@ -453,4 +514,3 @@ export async function createVoucherAction(
     return actionError("Gagal membuat voucher diskon.");
   }
 }
-
