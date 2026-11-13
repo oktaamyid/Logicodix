@@ -25,6 +25,21 @@ import {
   Percent,
   Cpu,
 } from "lucide-react";
+
+const DEFAULT_UNITS = [
+  "pcs",
+  "box",
+  "pack",
+  "cup",
+  "porsi",
+  "botol",
+  "bks",
+  "kg",
+  "gram",
+  "liter",
+  "pasang",
+  "lusin",
+];
 import {
   recommendPricingML,
   generateProductDescriptionNLG,
@@ -109,6 +124,32 @@ export function ProductManagementView({
   // New Category Field
   const [newCategoryName, setNewCategoryName] = useState("");
 
+  // Custom Unit State
+  const [customUnits, setCustomUnits] = useState<string[]>([]);
+  const [isAddingCustomUnit, setIsAddingCustomUnit] = useState(false);
+  const [customUnitInput, setCustomUnitInput] = useState("");
+
+  const unitOptions = Array.from(
+    new Set([
+      ...DEFAULT_UNITS,
+      ...productsList.map((p) => p.unit).filter(Boolean),
+      ...customUnits,
+      ...(formData.unit ? [formData.unit] : []),
+    ])
+  );
+
+  const handleSaveCustomUnit = () => {
+    const trimmed = customUnitInput.trim().toLowerCase();
+    if (trimmed) {
+      if (!customUnits.includes(trimmed)) {
+        setCustomUnits((prev) => [...prev, trimmed]);
+      }
+      setFormData((prev) => ({ ...prev, unit: trimmed }));
+    }
+    setIsAddingCustomUnit(false);
+    setCustomUnitInput("");
+  };
+
   // Filtered Products
   const filteredProducts = productsList.filter((item) => {
     const matchesSearch =
@@ -155,6 +196,8 @@ export function ProductManagementView({
 
   // Form handlers
   const handleOpenAddForm = () => {
+    setIsAddingCustomUnit(false);
+    setCustomUnitInput("");
     setEditingProduct(null);
     setFormData({
       sku: `SKU-${Date.now().toString().slice(-5)}`,
@@ -172,6 +215,8 @@ export function ProductManagementView({
   };
 
   const handleOpenEditForm = (item: ProductItem) => {
+    setIsAddingCustomUnit(false);
+    setCustomUnitInput("");
     setEditingProduct(item);
     setFormData({
       sku: item.sku,
@@ -826,13 +871,79 @@ export function ProductManagementView({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-foreground">Satuan Barang</label>
-                  <Input
-                    value={formData.unit}
-                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                    className="mt-1 text-sm"
-                    placeholder="pcs, cup, porsi"
-                  />
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-foreground">
+                      Satuan Barang
+                    </label>
+                    {!isAddingCustomUnit && (
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingCustomUnit(true)}
+                        className="text-[11px] font-semibold text-primary hover:underline"
+                      >
+                        + Opsi Baru
+                      </button>
+                    )}
+                  </div>
+
+                  {isAddingCustomUnit ? (
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <Input
+                        autoFocus
+                        placeholder="Contoh: toples, jar"
+                        value={customUnitInput}
+                        onChange={(e) => setCustomUnitInput(e.target.value)}
+                        className="text-xs h-9 font-medium"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleSaveCustomUnit();
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-9 px-3 text-xs bg-primary text-primary-foreground font-semibold"
+                        onClick={handleSaveCustomUnit}
+                      >
+                        Pakai
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-9 px-2 text-xs"
+                        onClick={() => {
+                          setIsAddingCustomUnit(false);
+                          setCustomUnitInput("");
+                        }}
+                      >
+                        Batal
+                      </Button>
+                    </div>
+                  ) : (
+                    <select
+                      value={formData.unit}
+                      onChange={(e) => {
+                        if (e.target.value === "__add_new__") {
+                          setIsAddingCustomUnit(true);
+                        } else {
+                          setFormData({ ...formData, unit: e.target.value });
+                        }
+                      }}
+                      className="mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      {unitOptions.map((u) => (
+                        <option key={u} value={u} className="bg-background text-foreground">
+                          {u}
+                        </option>
+                      ))}
+                      <option value="__add_new__" className="font-semibold text-primary">
+                        + Tambah Opsi Satuan Baru...
+                      </option>
+                    </select>
+                  )}
                 </div>
               </div>
 
