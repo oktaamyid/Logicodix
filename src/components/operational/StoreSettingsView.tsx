@@ -27,6 +27,7 @@ import {
   removeStoreMemberAction,
   type StoreSettingsBundle,
 } from "@/app/dashboard/settings/actions";
+import { ImageUploader } from "./ImageUploader";
 import { CREATIVE_SUBSECTORS } from "@/lib/schemas/operational.schema";
 
 interface StoreSettingsViewProps {
@@ -90,6 +91,8 @@ export function StoreSettingsView({ initialData }: StoreSettingsViewProps) {
   const [city, setCity] = useState(store.city);
   const [address, setAddress] = useState(store.address ?? "");
   const [description, setDescription] = useState(store.description ?? "");
+  const [logoUrl, setLogoUrl] = useState<string | null>(store.logoUrl ?? null);
+  const [bannerUrl, setBannerUrl] = useState<string | null>(store.bannerUrl ?? null);
   const [isActive, setIsActive] = useState(store.isActive);
 
   const [copiedLink, setCopiedLink] = useState(false);
@@ -148,6 +151,8 @@ export function StoreSettingsView({ initialData }: StoreSettingsViewProps) {
         city: city.trim(),
         address: address.trim(),
         description: description.trim(),
+        logoUrl,
+        bannerUrl,
         isActive,
       });
 
@@ -621,6 +626,34 @@ export function StoreSettingsView({ initialData }: StoreSettingsViewProps) {
                 <p className="text-xs text-muted-foreground">
                   Perubahan data toko akan langsung diterapkan ke katalog publik dan kasir
                 </p>
+              </div>
+            </div>
+
+            {/* Upload Logo & Banner Etalase Toko */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 pb-2 border-b border-border">
+              <div className="sm:col-span-4">
+                <ImageUploader
+                  storeId={store.id}
+                  folder="store"
+                  label="Logo Toko"
+                  hint="Rasio 1:1 (maks. 3 MB)"
+                  aspectRatio="square"
+                  value={logoUrl}
+                  onChange={setLogoUrl}
+                  disabled={!canEditStore}
+                />
+              </div>
+              <div className="sm:col-span-8">
+                <ImageUploader
+                  storeId={store.id}
+                  folder="store"
+                  label="Banner / Sampul Etalase"
+                  hint="Disarankan ukuran lebar 1200x400px"
+                  aspectRatio="banner"
+                  value={bannerUrl}
+                  onChange={setBannerUrl}
+                  disabled={!canEditStore}
+                />
               </div>
             </div>
 

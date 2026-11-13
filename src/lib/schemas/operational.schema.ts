@@ -211,6 +211,8 @@ export const updateStoreSettingsSchema = z.object({
   city: z.string().trim().min(2, "Nama kota/kabupaten wajib diisi").max(80),
   address: z.string().trim().max(500).optional(),
   description: z.string().trim().max(1000).optional(),
+  logoUrl: z.string().url("URL logo tidak valid").nullable().optional(),
+  bannerUrl: z.string().url("URL banner tidak valid").nullable().optional(),
   isActive: z.boolean().default(true),
 });
 

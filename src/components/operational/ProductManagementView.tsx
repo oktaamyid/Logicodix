@@ -27,6 +27,7 @@ import {
   Camera,
 } from "lucide-react";
 import { BarcodeScannerModal } from "./BarcodeScannerModal";
+import { ImageUploader } from "./ImageUploader";
 
 const DEFAULT_UNITS = [
   "pcs",
@@ -108,6 +109,7 @@ export function ProductManagementView({
     name: "",
     categoryId: "",
     description: "",
+    imageUrl: null as string | null,
     costPrice: 0,
     sellingPrice: 0,
     stockQuantity: 0,
@@ -207,6 +209,7 @@ export function ProductManagementView({
       name: "",
       categoryId: categoryList[0]?.id || "",
       description: "",
+      imageUrl: null,
       costPrice: 10000,
       sellingPrice: 15000,
       stockQuantity: 20,
@@ -226,6 +229,7 @@ export function ProductManagementView({
       name: item.name,
       categoryId: item.categoryId || "",
       description: item.description || "",
+      imageUrl: item.imageUrl || null,
       costPrice: item.costPrice,
       sellingPrice: item.sellingPrice,
       stockQuantity: item.stockQuantity,
@@ -248,6 +252,7 @@ export function ProductManagementView({
         sku: formData.sku,
         name: formData.name,
         description: formData.description || undefined,
+        imageUrl: formData.imageUrl,
         costPrice: Number(formData.costPrice),
         sellingPrice: Number(formData.sellingPrice),
         stockQuantity: Number(formData.stockQuantity),
@@ -700,6 +705,16 @@ export function ProductManagementView({
             </div>
 
             <form onSubmit={handleSaveProduct} className="flex-1 overflow-y-auto p-5 space-y-4">
+              <ImageUploader
+                storeId={storeId}
+                folder="products"
+                label="Foto Produk / Menu (Opsional)"
+                hint="Foto tampil di etalase publik & detail produk (maks. 3 MB)"
+                aspectRatio="square"
+                value={formData.imageUrl}
+                onChange={(url) => setFormData({ ...formData, imageUrl: url })}
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-semibold text-foreground">

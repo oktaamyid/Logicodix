@@ -157,6 +157,8 @@ export async function updateStoreSettingsAction(
       city: data.city,
       address: data.address || null,
       description: data.description || null,
+      logoUrl: data.logoUrl !== undefined ? data.logoUrl : undefined,
+      bannerUrl: data.bannerUrl !== undefined ? data.bannerUrl : undefined,
       isActive: data.isActive,
       updatedAt: new Date(),
     })
