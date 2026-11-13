@@ -91,9 +91,11 @@ Aplikasi ini menggunakan Next.js 15 App Router dengan Server Actions dan koneksi
 
 ### A. Persiapan Sekali di Awal (Lokal)
 
-1. Install adapter OpenNext Cloudflare dan Wrangler CLI sebagai devDependency:
+1. Paket adapter OpenNext Cloudflare dan Wrangler CLI sudah terpasang di `devDependencies`:
    ```bash
-   pnpm add -D @opennextjs/cloudflare wrangler
+   # Sudah terdaftar di package.json:
+   # @opennextjs/cloudflare & wrangler
+   pnpm install
    ```
 2. Login ke akun Cloudflare Anda:
    ```bash
@@ -104,7 +106,9 @@ Aplikasi ini menggunakan Next.js 15 App Router dengan Server Actions dan koneksi
 
 1. Build bundle Cloudflare Worker:
    ```bash
-   pnpm dlx opennextjs-cloudflare build
+   pnpm run build:worker
+   # atau jika menggunakan dlx langsung:
+   # pnpm dlx @opennextjs/cloudflare build
    ```
 2. Daftarkan Environment Variables / Secrets di Cloudflare Worker (wajib agar Auth, Database, dan Upload Storage berjalan di production):
    ```bash
@@ -124,7 +128,7 @@ Aplikasi ini menggunakan Next.js 15 App Router dengan Server Actions dan koneksi
 1. Buka **Cloudflare Dashboard** -> **Workers & Pages** -> **Create** -> **Import a repository**.
 2. Pilih repository `oktaamyid/Logicodix` dan branch production **`main`** (atau **`staging`** untuk preview).
 3. Atur konfigurasi build:
-   - **Build command**: `pnpm dlx opennextjs-cloudflare build`
+   - **Build command**: `pnpm run build:worker` *(atau: `pnpm dlx @opennextjs/cloudflare build` — pastikan mencantumkan scope `@opennextjs/`)*
    - **Deploy command**: `pnpm dlx wrangler deploy`
 4. Masukkan seluruh environment variables dari `.env.example` di menu **Settings -> Variables and Secrets**.
 5. **Penting untuk Google OAuth & Kamera**:
