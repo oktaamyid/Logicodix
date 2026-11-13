@@ -1,12 +1,7 @@
 import { getCurrentUserStore, getFinancialSummary } from "@/lib/actions/management/finance";
 import { getBusinessAnalytics } from "@/lib/actions/management/analytics";
-import { InventoryAnalyticsCards } from "@/components/management/InventoryAnalyticsCards";
-import { RevenueTrendChart } from "@/components/management/RevenueTrendChart";
-import { BusinessSmartInsights } from "@/components/management/BusinessSmartInsights";
 import { DateRangeSelector } from "@/components/management/DateRangeSelector";
-import { BEPForecastCards } from "@/components/management/BEPForecastCards";
-import { ManagementEmptyState } from "@/components/management/ManagementEmptyState";
-import { MLAnalyticsPanel } from "@/components/management/MLAnalyticsPanel";
+import { AnalyticsWorkspace } from "@/components/management/AnalyticsWorkspace";
 import { AlertCircle, TrendingUp, DollarSign, ShoppingCart, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
@@ -85,9 +80,9 @@ export default async function AnalyticsPage(props: {
         <div className="rounded-xl border bg-card p-5 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-semibold uppercase tracking-wider">
-              Omzet 30 Hari
+              Total Pemasukan
             </span>
-            <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 flex items-center justify-center">
               <DollarSign className="h-4 w-4" />
             </div>
           </div>
@@ -95,7 +90,7 @@ export default async function AnalyticsPage(props: {
             {formatIDR(analytics.totalRevenue)}
           </div>
           <p className="text-xs text-muted-foreground">
-            Total omzet transaksi terselesaikan
+            Total uang masuk dari transaksi selesai
           </p>
         </div>
 
@@ -112,7 +107,7 @@ export default async function AnalyticsPage(props: {
             {analytics.totalOrders}
           </div>
           <p className="text-xs text-muted-foreground">
-            Pesanan dari Kasir POS & Storefront
+            Pesanan dari kasir toko & katalog online
           </p>
         </div>
 
@@ -151,42 +146,12 @@ export default async function AnalyticsPage(props: {
         </div>
       </div>
 
-      {/* Grafik Tren Omzet Penjualan */}
-      <RevenueTrendChart trend={analytics.revenueTrend} />
-
-      {/* Jika belum ada transaksi sama sekali */}
-      {analytics.totalOrders === 0 && (
-        <ManagementEmptyState type="analytics" storeName={storeName} />
-      )}
-
-      {/* Kalkulator Titik Impas (BEP) & Proyeksi Finansial (Forecast) */}
-      <BEPForecastCards
-        totalRevenue={analytics.totalRevenue}
-        totalCost={analytics.totalCost}
+      {/* Tabbed Workspace for Clean Progressive Disclosure */}
+      <AnalyticsWorkspace
+        storeName={storeName}
+        analytics={analytics}
         totalExpense={financeSummary.totalExpense}
-        totalOrders={analytics.totalOrders}
         profitMarginPercent={financeSummary.profitMarginPercent}
-      />
-
-      {/* Prediksi Omzet (Holt+OLS) & Klasterisasi Risiko Produk (In-App ML) */}
-      <MLAnalyticsPanel
-        forecast={analytics.mlForecast}
-        productScores={analytics.mlProductScores}
-      />
-
-      {/* Rekomendasi Aksi Bisnis Cerdas (AI Insights) */}
-      <BusinessSmartInsights
-        deadstock={analytics.deadstockProducts}
-        restockAlerts={analytics.restockRecommendations}
-        profitMarginPercent={financeSummary.profitMarginPercent}
-        averageOrderValue={analytics.averageOrderValue}
-      />
-
-      {/* Algoritma Optimasi Inventori: Fast-Moving, Deadstock, & Restock */}
-      <InventoryAnalyticsCards
-        fastMoving={analytics.fastMovingProducts}
-        deadstock={analytics.deadstockProducts}
-        restockAlerts={analytics.restockRecommendations}
       />
     </div>
   );

@@ -15,6 +15,8 @@ import type {
 interface MLAnalyticsPanelProps {
   forecast: RevenueForecastResult;
   productScores: ProductMLScore[];
+  showForecast?: boolean;
+  showTable?: boolean;
 }
 
 function formatIDR(num: number): string {
@@ -54,6 +56,8 @@ const CLUSTER_BADGE: Record<
 export function MLAnalyticsPanel({
   forecast,
   productScores,
+  showForecast = true,
+  showTable = true,
 }: MLAnalyticsPanelProps) {
   const trendMeta =
     forecast.trendDirection === "growing"
@@ -105,64 +109,67 @@ export function MLAnalyticsPanel({
 
       {/* Forecast Grid */}
       <div className="p-6 space-y-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <div className="rounded-lg border border-border bg-background p-4 space-y-1">
-            <span className="text-xs font-medium text-muted-foreground">
-              Perkiraan Omzet 7 Hari ke Depan
-            </span>
-            <p className="font-mono text-xl font-bold text-foreground">
-              {formatIDR(forecast.predictedNext7Days)}
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              Rata-rata harian saat ini: {formatIDR(forecast.dailyExpectedBaseline)}
-            </p>
-          </div>
-
-          <div className="rounded-lg border border-border bg-background p-4 space-y-1">
-            <span className="text-xs font-medium text-muted-foreground">
-              Perkiraan Omzet 30 Hari ke Depan
-            </span>
-            <p className="font-mono text-xl font-bold text-primary">
-              {formatIDR(forecast.predictedNext30Days)}
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              Estimasi pemasukan 1 bulan penuh
-            </p>
-          </div>
-
-          <div className="rounded-lg border border-border bg-background p-4 space-y-1">
-            <span className="text-xs font-medium text-muted-foreground">
-              Rata-rata Perubahan Harian
-            </span>
-            <p className="font-mono text-xl font-bold text-foreground">
-              {forecast.slopePerDay >= 0 ? "+" : ""}
-              {formatIDR(forecast.slopePerDay)}/hari
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              Kenaikan atau penurunan omzet per hari
-            </p>
-          </div>
-
-          <div className="rounded-lg border border-border bg-background p-4 flex flex-col justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
-              Arah Penjualan Toko
-            </span>
-            <div className="pt-2">
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold ${trendMeta.badgeClass}`}
-              >
-                <TrendIcon className="h-3.5 w-3.5" />
-                <span>{trendMeta.label}</span>
+        {showForecast && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <div className="rounded-lg border border-border bg-background p-4 space-y-1">
+              <span className="text-xs font-medium text-muted-foreground">
+                Perkiraan Omzet 7 Hari ke Depan
               </span>
+              <p className="font-mono text-xl font-bold text-foreground">
+                {formatIDR(forecast.predictedNext7Days)}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Rata-rata harian saat ini: {formatIDR(forecast.dailyExpectedBaseline)}
+              </p>
             </div>
-            <p className="text-[11px] text-muted-foreground pt-1">
-              Dilihat dari catatan transaksi terakhir
-            </p>
+
+            <div className="rounded-lg border border-border bg-background p-4 space-y-1">
+              <span className="text-xs font-medium text-muted-foreground">
+                Perkiraan Omzet 30 Hari ke Depan
+              </span>
+              <p className="font-mono text-xl font-bold text-primary">
+                {formatIDR(forecast.predictedNext30Days)}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Estimasi pemasukan 1 bulan penuh
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-border bg-background p-4 space-y-1">
+              <span className="text-xs font-medium text-muted-foreground">
+                Rata-rata Perubahan Harian
+              </span>
+              <p className="font-mono text-xl font-bold text-foreground">
+                {forecast.slopePerDay >= 0 ? "+" : ""}
+                {formatIDR(forecast.slopePerDay)}/hari
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Kenaikan atau penurunan omzet per hari
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-border bg-background p-4 flex flex-col justify-between">
+              <span className="text-xs font-medium text-muted-foreground">
+                Arah Penjualan Toko
+              </span>
+              <div className="pt-2">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold ${trendMeta.badgeClass}`}
+                >
+                  <TrendIcon className="h-3.5 w-3.5" />
+                  <span>{trendMeta.label}</span>
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground pt-1">
+                Dilihat dari catatan transaksi terakhir
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Product Multi-Feature Clustering Table */}
-        <div className="space-y-3">
+        {showTable && (
+          <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Layers className="h-4 w-4 text-primary" />
@@ -240,7 +247,8 @@ export function MLAnalyticsPanel({
               </table>
             </div>
           )}
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );
