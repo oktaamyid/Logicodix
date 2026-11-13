@@ -55,13 +55,26 @@ export interface AnalyticsOverviewData {
  */
 export async function getBusinessAnalytics(
   storeId: string,
-  days: number = 30
+  days: number | "all" = 30
 ): Promise<AnalyticsOverviewData> {
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - days);
-  cutoffDate.setHours(0, 0, 0, 0);
+  let cutoffDate: Date | null = null;
+  const numDays = days === "all" ? 90 : Number(days);
+
+  if (days !== "all") {
+    cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - numDays);
+    cutoffDate.setHours(0, 0, 0, 0);
+  }
 
   // 1. Data Pesanan Selesai dalam rentang waktu
+  const orderConditions = [
+    eq(orders.storeId, storeId),
+    eq(orders.status, "completed"),
+  ];
+  if (cutoffDate) {
+    orderConditions.push(gte(orders.completedAt, cutoffDate));
+  }
+
   const orderStats = await db
     .select({
       totalRevenue: sql<number>`coalesce(sum(${orders.totalAmount}), 0)`,
@@ -69,13 +82,7 @@ export async function getBusinessAnalytics(
       orderCount: sql<number>`count(${orders.id})`,
     })
     .from(orders)
-    .where(
-      and(
-        eq(orders.storeId, storeId),
-        eq(orders.status, "completed"),
-        gte(orders.completedAt, cutoffDate)
-      )
-    );
+    .where(and(...orderConditions));
 
   const totalRevenue = Number(orderStats[0]?.totalRevenue || 0);
   const totalCost = Number(orderStats[0]?.totalCost || 0);
@@ -85,7 +92,7 @@ export async function getBusinessAnalytics(
   const grossProfit = totalRevenue - totalCost;
 
   // 2. Trend Penjualan Harian (7 hari atau rentang waktu terakhir)
-  const recentDays = Math.min(days, 7);
+  const recentDays = Math.min(numDays, 7);
   const trendCutoff = new Date();
   trendCutoff.setDate(trendCutoff.getDate() - recentDays);
 
@@ -119,19 +126,21 @@ export async function getBusinessAnalytics(
     .where(and(eq(products.storeId, storeId), eq(products.isActive, true)));
 
   // 4. Analisis Fast-Moving vs Deadstock melalui riwayat stock_movements (sale_pos & sale_online)
+  const movementConditions = [
+    eq(stockMovements.storeId, storeId),
+    inArray(stockMovements.type, ["sale_pos", "sale_online"]),
+  ];
+  if (cutoffDate) {
+    movementConditions.push(gte(stockMovements.createdAt, cutoffDate));
+  }
+
   const salesMovements = await db
     .select({
       productId: stockMovements.productId,
       totalQuantitySold: sql<number>`abs(sum(${stockMovements.quantityChange}))`,
     })
     .from(stockMovements)
-    .where(
-      and(
-        eq(stockMovements.storeId, storeId),
-        inArray(stockMovements.type, ["sale_pos", "sale_online"]),
-        gte(stockMovements.createdAt, cutoffDate)
-      )
-    )
+    .where(and(...movementConditions))
     .groupBy(stockMovements.productId);
 
   const salesMap = new Map<string, number>();
@@ -170,7 +179,7 @@ export async function getBusinessAnalytics(
         currentStock: p.stockQuantity,
         costPrice: p.costPrice,
         tiedUpCapital: p.stockQuantity * p.costPrice, // Dana modal yang tertahan (idle capital)
-        daysInactive: days,
+        daysInactive: numDays,
       };
     })
     .sort((a, b) => b.tiedUpCapital - a.tiedUpCapital)
@@ -180,7 +189,7 @@ export async function getBusinessAnalytics(
   const restockRecommendations = storeProducts
     .map((p) => {
       const sold = salesMap.get(p.id) || 0;
-      const dailyRunRate = sold > 0 ? sold / days : 0;
+      const dailyRunRate = sold > 0 ? sold / numDays : 0;
       const daysOfStockLeft =
         dailyRunRate > 0 ? Math.round(p.stockQuantity / dailyRunRate) : 999;
 

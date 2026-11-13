@@ -180,13 +180,24 @@ const CATEGORY_LABELS: Record<string, string> = {
  */
 export async function getFinancialSummary(
   storeId: string,
-  daysBack: number = 30
+  daysBack: number | "all" = 30
 ): Promise<FinanceSummaryData> {
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - daysBack);
-  startDate.setHours(0, 0, 0, 0);
+  let startDate: Date | null = null;
+  if (daysBack !== "all") {
+    startDate = new Date();
+    startDate.setDate(startDate.getDate() - Number(daysBack));
+    startDate.setHours(0, 0, 0, 0);
+  }
 
   // 1. Hitung total pemasukan dan total HPP dari pesanan selesai (completed)
+  const orderConditions = [
+    eq(orders.storeId, storeId),
+    eq(orders.status, "completed"),
+  ];
+  if (startDate) {
+    orderConditions.push(gte(orders.completedAt, startDate));
+  }
+
   const completedOrders = await db
     .select({
       totalRevenue: sql<number>`coalesce(sum(${orders.totalAmount}), 0)`,
@@ -194,31 +205,27 @@ export async function getFinancialSummary(
       orderCount: sql<number>`count(${orders.id})`,
     })
     .from(orders)
-    .where(
-      and(
-        eq(orders.storeId, storeId),
-        eq(orders.status, "completed"),
-        gte(orders.completedAt, startDate)
-      )
-    );
+    .where(and(...orderConditions));
 
   const orderRevenue = Number(completedOrders[0]?.totalRevenue || 0);
   const orderHpp = Number(completedOrders[0]?.totalCost || 0);
   const totalOrdersCompleted = Number(completedOrders[0]?.orderCount || 0);
 
   // 2. Hitung pemasukan manual jika ada di financial_entries
+  const manualConditions = [
+    eq(financialEntries.storeId, storeId),
+    eq(financialEntries.type, "income"),
+  ];
+  if (startDate) {
+    manualConditions.push(gte(financialEntries.transactionDate, startDate));
+  }
+
   const manualIncomes = await db
     .select({
       total: sql<number>`coalesce(sum(${financialEntries.amount}), 0)`,
     })
     .from(financialEntries)
-    .where(
-      and(
-        eq(financialEntries.storeId, storeId),
-        eq(financialEntries.type, "income"),
-        gte(financialEntries.transactionDate, startDate)
-      )
-    );
+    .where(and(...manualConditions));
   const totalManualIncome = Number(manualIncomes[0]?.total || 0);
 
   // Total Pemasukan = Penjualan Pesanan + Pemasukan Tambahan
@@ -228,18 +235,20 @@ export async function getFinancialSummary(
   const grossProfit = totalIncome - orderHpp;
 
   // 3. Hitung seluruh beban pengeluaran operasional
+  const expenseConditions = [
+    eq(financialEntries.storeId, storeId),
+    eq(financialEntries.type, "expense"),
+  ];
+  if (startDate) {
+    expenseConditions.push(gte(financialEntries.transactionDate, startDate));
+  }
+
   const expenses = await db
     .select({
       total: sql<number>`coalesce(sum(${financialEntries.amount}), 0)`,
     })
     .from(financialEntries)
-    .where(
-      and(
-        eq(financialEntries.storeId, storeId),
-        eq(financialEntries.type, "expense"),
-        gte(financialEntries.transactionDate, startDate)
-      )
-    );
+    .where(and(...expenseConditions));
   const totalExpense = Number(expenses[0]?.total || 0);
 
   // Laba Bersih = Laba Kotor - Beban Operasional
@@ -254,13 +263,7 @@ export async function getFinancialSummary(
       total: sql<number>`coalesce(sum(${financialEntries.amount}), 0)`,
     })
     .from(financialEntries)
-    .where(
-      and(
-        eq(financialEntries.storeId, storeId),
-        eq(financialEntries.type, "expense"),
-        gte(financialEntries.transactionDate, startDate)
-      )
-    )
+    .where(and(...expenseConditions))
     .groupBy(financialEntries.expenseCategory);
 
   const breakdownByCategory = categoryGrouped.map((item) => {

@@ -8,10 +8,24 @@ import { FinanceMetricsCards } from "@/components/management/FinanceMetricsCards
 import { FinancialTransactionsTable } from "@/components/management/FinancialTransactionsTable";
 import { ExpenseBreakdownCard } from "@/components/management/ExpenseBreakdownCard";
 import { ExportFinanceReportButton } from "@/components/management/ExportFinanceReportButton";
+import { DateRangeSelector } from "@/components/management/DateRangeSelector";
 import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 
-export default async function FinancePage() {
+export default async function FinancePage(props: {
+  searchParams?: Promise<{ period?: string }>;
+}) {
+  const searchParams = await props.searchParams;
+  const periodParam = searchParams?.period || "30d";
+  const daysBack =
+    periodParam === "7d"
+      ? 7
+      : periodParam === "90d"
+      ? 90
+      : periodParam === "all"
+      ? "all"
+      : 30;
+
   const storeRes = await getCurrentUserStore();
 
   if (!storeRes.success) {
@@ -35,9 +49,9 @@ export default async function FinancePage() {
 
   const { storeId, storeName } = storeRes.data;
 
-  // Mengambil ringkasan keuangan 30 hari terakhir dan transaksi kas terbaru
-  const summary = await getFinancialSummary(storeId, 30);
-  const recentTransactions = await getRecentTransactions(storeId, 40);
+  // Mengambil ringkasan keuangan sesuai filter periode
+  const summary = await getFinancialSummary(storeId, daysBack);
+  const recentTransactions = await getRecentTransactions(storeId, 50);
 
   return (
     <div className="space-y-6">
@@ -57,7 +71,8 @@ export default async function FinancePage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <DateRangeSelector />
           <ExportFinanceReportButton
             storeName={storeName}
             entries={recentTransactions}
