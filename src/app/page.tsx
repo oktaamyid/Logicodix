@@ -1,13 +1,16 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Store,
   ArrowRight,
-  ArrowUpRight,
-  Receipt,
-  PackageCheck,
-  TrendingUp,
+  Play,
   ShoppingBag,
+  ScanBarcode,
+  Receipt,
+  TrendingUp,
+  CheckCircle2,
 } from "lucide-react";
+import { HomeDemoShowcase } from "@/components/market/HomeDemoShowcase";
 
 export default function HomePage() {
   return (
@@ -35,16 +38,16 @@ export default function HomePage() {
               Cara Kerja
             </Link>
             <Link
-              href="#fitur-lengkap"
+              href="#demo"
               className="hover:text-foreground transition-colors py-2"
             >
-              Fitur Usaha
+              Coba Demo
             </Link>
             <Link
               href="/explore"
               className="hover:text-foreground transition-colors py-2"
             >
-              Direktori Toko UMKM
+              Direktori UMKM
             </Link>
           </nav>
 
@@ -59,421 +62,251 @@ export default function HomePage() {
               href="/register"
               className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              Daftar Toko
+              Buka Toko
             </Link>
           </div>
         </div>
       </header>
 
       <main className="flex-1">
-        {/* Section 1: Hero & Concrete Receipt-to-Ledger Breakdown */}
-        <section className="border-b border-border py-12 sm:py-20">
+        {/* Section 1: Visual-First Hero */}
+        <section className="border-b border-border py-10 sm:py-16">
           <div className="container mx-auto max-w-6xl px-4 sm:px-6">
-            <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-start">
-              {/* Left Column: Clear Value Proposition */}
-              <div className="lg:col-span-7 space-y-6 pt-2">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-5xl leading-[1.15]">
-                  Aplikasi kasir, katalog pesanan WhatsApp, dan pembukuan untuk
-                  toko UMKM.
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
+              {/* Left: Concise Value Proposition */}
+              <div className="lg:col-span-6 space-y-5">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-5xl leading-[1.12]">
+                  Kasir, katalog WhatsApp, dan pembukuan untuk toko UMKM.
                 </h1>
 
-                <p className="max-w-2xl text-base sm:text-lg text-muted-foreground leading-relaxed">
-                  Catat penjualan di gerai fisik maupun pesanan dari pelanggan
-                  online di satu tempat. Setiap transaksi langsung memotong sisa
-                  stok gudang dan menghitung laba bersih setelah dikurangi harga
-                  modal (HPP).
+                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl">
+                  Kelola penjualan toko fisik dan pesanan online dalam satu layar.
+                  Stok terpotong otomatis dan laba bersih langsung terhitung.
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
                   <Link
                     href="/register"
                     className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
                   >
-                    <span>Buat Akun Toko Gratis</span>
+                    <span>Buat Toko Gratis</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
+                  <Link
+                    href="#demo"
+                    className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-lg border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground hover:bg-secondary transition-colors"
+                  >
+                    <Play className="h-4 w-4 text-emerald-700" />
+                    <span>Coba Demo Langsung</span>
+                  </Link>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />
+                    Scan barcode kamera
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />
+                    Akun kasir & staf terpisah
+                  </span>
                   <Link
                     href="/explore"
-                    className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-lg border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground hover:bg-secondary transition-colors"
+                    className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
                   >
-                    <span>Telusuri Direktori UMKM</span>
+                    <span>Jelajahi Direktori UMKM</span>
+                    <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>
-
-                <div className="pt-2">
-                  <Link
-                    href="/store/kopi-seduh-nusantara"
-                    className="inline-flex min-h-[40px] items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-                  >
-                    <span>
-                      Lihat contoh halaman katalog pelanggan: Kopi Seduh
-                      Nusantara
-                    </span>
-                    <ArrowUpRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
-
-                {/* Key Operational Facts */}
-                <dl className="grid grid-cols-1 sm:grid-cols-3 gap-6 border-t border-border pt-8">
-                  <div>
-                    <dt className="text-xs font-semibold text-foreground">
-                      Stok Terhubung Otomatis
-                    </dt>
-                    <dd className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                      Barang terjual di kasir atau katalog online otomatis
-                      mengurangi jumlah stok di gudang.
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs font-semibold text-foreground">
-                      Laba Akurat Berbasis HPP
-                    </dt>
-                    <dd className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                      Bukan sekadar omzet kotor. Sistem memisahkan harga modal
-                      dari keuntungan bersih.
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs font-semibold text-foreground">
-                      Pesanan Masuk ke WhatsApp
-                    </dt>
-                    <dd className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                      Pelanggan memilih barang di katalog web, lalu nota
-                      pesanan dikirim ke nomor WhatsApp toko.
-                    </dd>
-                  </div>
-                </dl>
               </div>
 
-              {/* Right Column: Clean Ledger & Receipt Preview */}
-              <div className="lg:col-span-5">
-                <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-                  {/* Top Header */}
-                  <div className="border-b border-border bg-secondary/50 px-5 py-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold text-muted-foreground">
-                        Contoh Pencatatan Otomatis
-                      </p>
-                      <h2 className="text-sm font-bold text-foreground mt-0.5">
-                        Kopi Seduh Nusantara, Bandung
-                      </h2>
-                    </div>
-                    <span className="font-mono text-xs font-semibold text-foreground bg-background border border-border px-2.5 py-1 rounded">
-                      #POS-042
-                    </span>
-                  </div>
-
-                  {/* Receipt Items Table */}
-                  <div className="p-5 space-y-4">
-                    <table className="w-full text-left text-xs">
-                      <thead>
-                        <tr className="border-b border-border text-muted-foreground">
-                          <th className="pb-2 font-semibold">Item Terjual</th>
-                          <th className="pb-2 text-right font-semibold">
-                            Stok
-                          </th>
-                          <th className="pb-2 text-right font-semibold">
-                            Subtotal
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border text-sm">
-                        <tr>
-                          <td className="py-3 pr-2">
-                            <p className="font-semibold text-foreground">
-                              2x Arabika Gayo 250g
-                            </p>
-                            <p className="text-xs text-muted-foreground font-mono">
-                              Modal HPP: Rp 48.000/bks
-                            </p>
-                          </td>
-                          <td className="py-3 px-2 text-right font-mono text-xs text-muted-foreground">
-                            24 → 22
-                          </td>
-                          <td className="py-3 pl-2 text-right font-mono font-semibold text-foreground">
-                            Rp 150.000
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="py-3 pr-2">
-                            <p className="font-semibold text-foreground">
-                              1x Drip Bag Liberika
-                            </p>
-                            <p className="text-xs text-muted-foreground font-mono">
-                              Modal HPP: Rp 30.000/box
-                            </p>
-                          </td>
-                          <td className="py-3 px-2 text-right font-mono text-xs text-muted-foreground">
-                            15 → 14
-                          </td>
-                          <td className="py-3 pl-2 text-right font-semibold font-mono text-foreground">
-                            Rp 55.000
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-
-                    {/* Financial Summary */}
-                    <div className="border-t border-border pt-4 space-y-2 text-xs">
-                      <div className="flex items-center justify-between text-muted-foreground">
-                        <span>Penerimaan Kasir (QRIS)</span>
-                        <span className="font-mono font-semibold text-foreground">
-                          Rp 205.000
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-muted-foreground">
-                        <span>Total Harga Modal (HPP)</span>
-                        <span className="font-mono font-semibold text-foreground">
-                          -Rp 126.000
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between rounded-lg bg-emerald-50 px-3 py-2.5 text-sm font-bold text-emerald-950 border border-emerald-200">
-                        <span>Laba Kotor Tersimpan</span>
-                        <span className="font-mono">+Rp 79.000 (38,5%)</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Footer Link */}
-                  <div className="border-t border-border bg-secondary/30 px-5 py-3 flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      Tercatat langsung di Buku Kas
-                    </span>
-                    <Link
-                      href="/dashboard/operational/pos"
-                      className="font-semibold text-primary hover:underline inline-flex items-center gap-1"
-                    >
-                      <span>Buka Kasir</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </div>
+              {/* Right: Hero Visual Asset */}
+              <div className="lg:col-span-6">
+                <div className="relative overflow-hidden rounded-2xl border border-border bg-muted/30 shadow-md">
+                  <Image
+                    src="/images/hero-umkm.jpg"
+                    alt="Ilustrasi meja kasir toko UMKM menggunakan sistem POS Niagarupa dan pemindai barcode"
+                    width={1200}
+                    height={900}
+                    priority
+                    className="w-full h-auto object-cover"
+                  />
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Section 2: Cara Kerja (3 Step Horizontal Flow) */}
+        {/* Section 2: Cara Kerja dengan Tampilan Visual Ringkas */}
         <section
           id="cara-kerja"
-          className="border-b border-border bg-card py-14 sm:py-20"
+          className="border-b border-border bg-card py-12 sm:py-16"
         >
-          <div className="container mx-auto max-w-6xl px-4 sm:px-6 space-y-10">
-            <div className="max-w-2xl">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                Cara kerja dari pencatatan barang hingga laporan keuangan
-              </h2>
-              <p className="mt-2 text-sm sm:text-base text-muted-foreground">
-                Tidak perlu menyalin catatan dari buku tulis ke spreadsheet.
-                Tiga langkah berikut berjalan saling terhubung.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 divide-y divide-border lg:grid-cols-3 lg:divide-y-0 lg:divide-x border border-border rounded-xl bg-background">
-              {/* Step 1 */}
-              <div className="p-6 sm:p-8 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-primary">
-                    LANGKAH 01
-                  </span>
-                  <PackageCheck className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground">
-                  Masukkan Produk & Harga Modal
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Catat nama produk, kode SKU, harga pokok (HPP), harga jual,
-                  dan batas stok minimum. Sistem langsung menampilkan persentase
-                  margin keuntungan setiap barang.
-                </p>
-              </div>
-
-              {/* Step 2 */}
-              <div className="p-6 sm:p-8 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-primary">
-                    LANGKAH 02
-                  </span>
-                  <Receipt className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground">
-                  Terima Transaksi Kasir & Online
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Gunakan layar kasir (POS) untuk melayani pembeli di toko, atau
-                  bagikan tautan katalog online Anda di WhatsApp dan Instagram
-                  untuk menerima pesanan jarak jauh.
-                </p>
-              </div>
-
-              {/* Step 3 */}
-              <div className="p-6 sm:p-8 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-primary">
-                    LANGKAH 03
-                  </span>
-                  <TrendingUp className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground">
-                  Evaluasi Laba Bersih & Stok
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Catat pengeluaran operasional seperti listrik, sewa, dan bahan
-                  baku. Pantau laba bersih, target titik impas (BEP), serta
-                  daftar barang yang lama tidak terjual.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 3: Detailed Capabilities (Editorial Split List) */}
-        <section id="fitur-lengkap" className="py-14 sm:py-20">
-          <div className="container mx-auto max-w-6xl px-4 sm:px-6">
-            <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
-              {/* Left Sticky Header */}
-              <div className="lg:col-span-4 space-y-4">
+          <div className="container mx-auto max-w-6xl px-4 sm:px-6 space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div>
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                  Fitur lengkap untuk operasional harian toko
+                  Cara kerja dalam 3 langkah
                 </h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Seluruh modul dapat diakses dari laptop kasir maupun ponsel
-                  pemilik toko, lengkap dengan pembagian hak akses untuk staf
-                  dan kasir.
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Dari input barang sampai laporan untung rugi berjalan otomatis.
                 </p>
-                <div className="pt-2">
-                  <Link
-                    href="/dashboard/operational/pos"
-                    className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-secondary transition-colors"
-                  >
-                    <span>Buka Dashboard Toko</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Step 1 Visual Card */}
+              <div className="rounded-xl border border-border bg-background p-5 flex flex-col justify-between space-y-4">
+                <div className="rounded-lg border border-border bg-secondary/40 p-3.5 space-y-2">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-mono text-muted-foreground">
+                      SKU: 89910021
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded bg-emerald-100 px-1.5 py-0.5 font-semibold text-emerald-800">
+                      <ScanBarcode className="h-3 w-3" /> Scan
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold text-foreground">
+                    Arabika Gayo 250g
+                  </p>
+                  <div className="flex items-center justify-between text-[11px] pt-1 border-t border-border">
+                    <span className="text-muted-foreground">Modal: Rp 48rb</span>
+                    <span className="font-bold text-emerald-700">
+                      Jual: Rp 75rb
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="font-mono text-[11px] font-bold text-primary">
+                    01. DATA PRODUK
+                  </span>
+                  <h3 className="text-base font-bold text-foreground mt-0.5">
+                    Input Barang & Scan Barcode
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    Masukkan foto, harga modal, dan harga jual, atau scan langsung
+                    dari kamera.
+                  </p>
                 </div>
               </div>
 
-              {/* Right Divided Feature Rows */}
-              <div className="lg:col-span-8 divide-y divide-border border-t border-b border-border">
-                <div className="py-6 grid grid-cols-1 sm:grid-cols-12 gap-4">
-                  <div className="sm:col-span-4">
-                    <h3 className="text-base font-bold text-foreground">
-                      Kasir POS & Struk Digital
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Transaksi cepat di gerai fisik
-                    </p>
+              {/* Step 2 Visual Card */}
+              <div className="rounded-xl border border-border bg-background p-5 flex flex-col justify-between space-y-4">
+                <div className="rounded-lg border border-border bg-secondary/40 p-3.5 space-y-2">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-semibold text-foreground flex items-center gap-1">
+                      <Receipt className="h-3 w-3 text-emerald-700" /> Kasir POS
+                    </span>
+                    <span className="rounded bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                      Tunai / QRIS
+                    </span>
                   </div>
-                  <div className="sm:col-span-8 space-y-2">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Cari barang berdasarkan nama atau kategori, tambahkan
-                      potongan diskon transaksi, pilih metode bayar (Tunai,
-                      QRIS, Transfer Bank), dan cetak struk belanja pelanggan.
-                    </p>
-                    <Link
-                      href="/dashboard/operational/pos"
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                    >
-                      <span>Lihat Terminal Kasir</span>
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">2x Arabika Gayo</span>
+                    <span className="font-mono font-bold text-foreground">
+                      Rp 150.000
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] pt-1 border-t border-border text-emerald-800 font-semibold">
+                    <span>Kembalian: Rp 0</span>
+                    <span>Struk Siap</span>
                   </div>
                 </div>
 
-                <div className="py-6 grid grid-cols-1 sm:grid-cols-12 gap-4">
-                  <div className="sm:col-span-4">
-                    <h3 className="text-base font-bold text-foreground">
-                      Katalog Online & Kupon Diskon
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Etalase resmi terhubung WhatsApp
-                    </p>
+                <div>
+                  <span className="font-mono text-[11px] font-bold text-primary">
+                    02. TRANSAKSI
+                  </span>
+                  <h3 className="text-base font-bold text-foreground mt-0.5">
+                    Layani Kasir & Order WhatsApp
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    Proses transaksi di gerai fisik atau terima pesanan dari link
+                    katalog toko.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 3 Visual Card */}
+              <div className="rounded-xl border border-border bg-background p-5 flex flex-col justify-between space-y-4">
+                <div className="rounded-lg border border-border bg-secondary/40 p-3.5 space-y-2">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-semibold text-foreground flex items-center gap-1">
+                      <TrendingUp className="h-3 w-3 text-emerald-700" /> Buku Kas
+                    </span>
+                    <span className="text-emerald-700 font-semibold">
+                      Stok: 24 → 22
+                    </span>
                   </div>
-                  <div className="sm:col-span-8 space-y-2">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Setiap usaha mendapatkan alamat halaman katalog tersendiri.
-                      Pembeli dapat memilih barang, memakai kode kupon promo
-                      toko, dan meneruskan pesanan langsung ke WhatsApp Anda.
-                    </p>
-                    <Link
-                      href="/store/kopi-seduh-nusantara"
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                    >
-                      <span>Lihat Contoh Katalog Toko</span>
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Untung Bersih</span>
+                    <span className="font-mono font-bold text-emerald-700">
+                      +Rp 54.000
+                    </span>
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-emerald-100 overflow-hidden">
+                    <div className="h-full w-2/3 bg-emerald-600 rounded-full" />
                   </div>
                 </div>
 
-                <div className="py-6 grid grid-cols-1 sm:grid-cols-12 gap-4">
-                  <div className="sm:col-span-4">
-                    <h3 className="text-base font-bold text-foreground">
-                      Audit Stok & Stok Opname
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Kendali keluar-masuk barang gudang
-                    </p>
-                  </div>
-                  <div className="sm:col-span-8 space-y-2">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Rekam penambahan stok baru (restock), penyesuaian stok
-                      opname fisik, maupun pencatatan barang rusak. Seluruh
-                      riwayat perubahan jumlah barang tercatat beserta waktunya.
-                    </p>
-                    <Link
-                      href="/dashboard/operational/inventory"
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                    >
-                      <span>Lihat Riwayat Mutasi Stok</span>
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="py-6 grid grid-cols-1 sm:grid-cols-12 gap-4">
-                  <div className="sm:col-span-4">
-                    <h3 className="text-base font-bold text-foreground">
-                      Buku Kas, Laba Rugi & BEP
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Laporan keuangan siap unduh
-                    </p>
-                  </div>
-                  <div className="sm:col-span-8 space-y-2">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Rekapitulasi pemasukan penjualan dan pengeluaran biaya
-                      usaha berdasarkan rentang tanggal. Dilengkapi perhitungan
-                      titik impas (Break-Even Point), deteksi modal tertahan
-                      pada stok mengendap, serta unduh laporan CSV/PDF.
-                    </p>
-                    <Link
-                      href="/dashboard/management/finance"
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                    >
-                      <span>Lihat Buku Kas & Laba Rugi</span>
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
-                  </div>
+                <div>
+                  <span className="font-mono text-[11px] font-bold text-primary">
+                    03. LAPORAN
+                  </span>
+                  <h3 className="text-base font-bold text-foreground mt-0.5">
+                    Pantau Stok & Untung Bersih
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                    Stok berkurang otomatis dan laba bersih langsung terlihat
+                    tanpa hitung manual.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Section 4: Dual Action Footer Band */}
-        <section className="border-t border-border bg-slate-900 text-white py-12 sm:py-16">
-          <div className="container mx-auto max-w-6xl px-4 sm:px-6">
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:items-center">
-              <div className="space-y-2">
-                <h2 className="text-2xl font-bold tracking-tight text-white">
-                  Mulai rapikan pencatatan toko Anda hari ini
+        {/* Section 3: Interactive Live Demo & Feature Preview */}
+        <section id="demo" className="py-12 sm:py-16">
+          <div className="container mx-auto max-w-6xl px-4 sm:px-6 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                  Coba demo interaktif & lihat tampilannya
                 </h2>
-                <p className="text-sm text-slate-300 max-w-lg leading-relaxed">
-                  Daftar akun baru untuk membuka toko UMKM Anda, atau jelajahi
-                  produk dari pelaku usaha lokal yang telah bergabung.
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Klik produk, simulasikan scan barcode, atau lihat tampilan
+                  katalog dan laporan di bawah ini.
+                </p>
+              </div>
+              <Link
+                href="/store/kopi-seduh-nusantara"
+                className="inline-flex min-h-[40px] items-center gap-1.5 text-xs font-semibold text-primary hover:underline shrink-0"
+              >
+                <span>Buka Toko Demo: Kopi Seduh Nusantara</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            <HomeDemoShowcase />
+          </div>
+        </section>
+
+        {/* Section 4: Compact CTA Footer Band */}
+        <section className="border-t border-border bg-slate-900 text-white py-10 sm:py-14">
+          <div className="container mx-auto max-w-6xl px-4 sm:px-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-1.5">
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                  Siap merapikan kasir dan pembukuan toko Anda?
+                </h2>
+                <p className="text-sm text-slate-300">
+                  Gratis untuk UMKM. Langsung aktif dalam hitungan menit.
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row md:justify-end gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 shrink-0">
                 <Link
                   href="/register"
                   className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-lg bg-emerald-700 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-600 transition-colors"
@@ -486,7 +319,7 @@ export default function HomePage() {
                   className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-700 transition-colors"
                 >
                   <ShoppingBag className="h-4 w-4 text-emerald-400" />
-                  <span>Belanja Produk Lokal</span>
+                  <span>Direktori UMKM</span>
                 </Link>
               </div>
             </div>
@@ -502,6 +335,9 @@ export default function HomePage() {
             <span>Niagarupa</span>
           </div>
           <div className="flex flex-wrap items-center gap-6">
+            <Link href="#demo" className="hover:text-foreground">
+              Demo Sistem
+            </Link>
             <Link href="/explore" className="hover:text-foreground">
               Direktori Toko
             </Link>
