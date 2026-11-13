@@ -32,7 +32,7 @@ export default async function VouchersPage() {
     <div className="space-y-6">
       <div className="space-y-1">
         <Link
-          href="/orders"
+          href="/dashboard/orders"
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-1"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
