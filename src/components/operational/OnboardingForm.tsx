@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createStoreOnboardingAction } from "@/app/(auth)/actions";
-import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Lock } from "lucide-react";
 
 const SUBSECTORS = [
   { value: "kuliner", label: "Kuliner & F&B" },
@@ -20,6 +20,14 @@ const SUBSECTORS = [
   { value: "lainnya", label: "Sektor Kreatif Lainnya" },
 ] as const;
 
+function toSlug(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export function OnboardingForm() {
   const router = useRouter();
   const [name, setName] = React.useState("");
@@ -29,29 +37,13 @@ export function OnboardingForm() {
   const [city, setCity] = React.useState("");
   const [address, setAddress] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [isPending, startTransition] = React.useTransition();
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setName(val);
-    if (!isSlugManuallyEdited) {
-      const generatedSlug = val
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      setSlug(generatedSlug);
-    }
-  };
-
-  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsSlugManuallyEdited(true);
-    setSlug(
-      e.target.value
-        .toLowerCase()
-        .replace(/[^a-z0-9-]/g, "")
-    );
+    setSlug(toSlug(val));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -59,9 +51,10 @@ export function OnboardingForm() {
     setErrorMsg(null);
 
     startTransition(async () => {
+      const computedSlug = slug || toSlug(name);
       const res = await createStoreOnboardingAction({
-        name,
-        slug,
+        name: name.trim(),
+        slug: computedSlug,
         subsector: subsector as any,
         whatsappNumber,
         city,
@@ -104,25 +97,40 @@ export function OnboardingForm() {
         />
       </div>
 
-      {/* Slug URL */}
+      {/* Slug URL (Auto-generated & Locked) */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <label htmlFor="slug" className="text-xs font-semibold text-foreground">
-            Alamat Tautan Katalog Publik <span className="text-destructive">*</span>
+          <label htmlFor="slug" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+            <span>Alamat Tautan Katalog Publik</span>
+            <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+              Otomatis
+            </span>
           </label>
           <span className="text-[11px] text-muted-foreground font-mono">
             niagarupa.id/store/{slug || "slug-toko"}
           </span>
         </div>
-        <Input
-          id="slug"
-          type="text"
-          placeholder="kopi-seduh-nusantara"
-          value={slug}
-          onChange={handleSlugChange}
-          required
-          disabled={isPending}
-        />
+        <div className="relative flex items-center rounded-md border border-input bg-muted/40 focus-within:ring-1 focus-within:ring-ring">
+          <span className="pl-3 pr-1 text-xs font-mono text-muted-foreground select-none">
+            /store/
+          </span>
+          <input
+            id="slug"
+            type="text"
+            readOnly
+            tabIndex={-1}
+            value={slug}
+            placeholder="terisi-otomatis-dari-nama-usaha"
+            className="flex h-9 w-full bg-transparent px-2 py-1 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none cursor-not-allowed select-all"
+            required
+          />
+          <span className="pr-3 text-muted-foreground" title="Dibuat otomatis dari nama usaha">
+            <Lock className="h-3.5 w-3.5" />
+          </span>
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          Dibuat otomatis dari nama usaha Anda untuk alamat etalase toko.
+        </p>
       </div>
 
       {/* Subsektor Ekonomi Kreatif */}
