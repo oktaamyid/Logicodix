@@ -145,6 +145,20 @@ export const posCheckoutSchema = z.object({
     .min(1, "Keranjang kasir tidak boleh kosong"),
 });
 
+/**
+ * Skema validasi pembuatan kategori produk baru (Domain 1).
+ */
+export const createCategorySchema = z.object({
+  storeId: z.string().uuid("ID Toko tidak valid"),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Nama kategori minimal 2 karakter")
+    .max(80, "Nama kategori maksimal 80 karakter"),
+});
+
+export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type StoreOnboardingInput = z.infer<typeof storeOnboardingSchema>;
