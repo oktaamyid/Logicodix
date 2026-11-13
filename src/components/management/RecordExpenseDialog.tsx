@@ -4,7 +4,7 @@ import { useState } from "react";
 import { recordExpenseAction } from "@/lib/actions/management/finance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, Loader2 } from "lucide-react";
+import { PlusCircle, Loader2, X } from "lucide-react";
 
 interface RecordExpenseDialogProps {
   storeId: string;
@@ -105,10 +105,11 @@ export function RecordExpenseDialog({ storeId }: RecordExpenseDialogProps) {
               </div>
               <button
                 type="button"
+                aria-label="Tutup dialog"
                 onClick={() => setIsOpen(false)}
-                className="text-muted-foreground hover:text-foreground text-sm font-semibold p-1"
+                className="text-muted-foreground hover:text-foreground inline-flex min-h-[36px] min-w-[36px] items-center justify-center rounded-md hover:bg-secondary"
               >
-                ✕
+                <X className="h-4 w-4" />
               </button>
             </div>
 

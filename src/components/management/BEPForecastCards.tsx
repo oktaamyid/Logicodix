@@ -74,7 +74,7 @@ export function BEPForecastCards({
                 : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
             }`}
           >
-            {isBEPAchieved ? "✓ Target BEP Tercapai" : "Menuju BEP"}
+            {isBEPAchieved ? "Target BEP Tercapai" : "Menuju BEP"}
           </span>
         </div>
 

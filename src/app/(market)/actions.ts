@@ -335,7 +335,7 @@ export async function createPublicOrderAction(
       )
       .join("\n");
 
-    const message = `Halo ${store.name}! 👋\nSaya ingin konfirmasi pesanan dari Toko Online Niagarupa:\n\n*No. Pesanan:* ${orderNumber}\n*Nama:* ${data.customerName}\n*Alamat/Catatan:* ${data.customerAddress}\n*Metode Bayar:* ${data.paymentMethod.toUpperCase()}\n\n*Rincian Pesanan:*\n${itemListText}\n\n*Subtotal:* Rp ${subtotalAmount.toLocaleString("id-ID")}\n*Diskon:* Rp ${discountAmount.toLocaleString("id-ID")}\n*Total Tagihan:* Rp ${totalAmount.toLocaleString("id-ID")}\n\nMohon petunjuk pembayaran & konfirmasinya ya kak. Terima kasih! 🙏`;
+    const message = `Halo ${store.name},\nSaya ingin konfirmasi pesanan dari Katalog Online Niagarupa:\n\n*No. Pesanan:* ${orderNumber}\n*Nama:* ${data.customerName}\n*Alamat/Catatan:* ${data.customerAddress}\n*Metode Bayar:* ${data.paymentMethod.toUpperCase()}\n\n*Rincian Pesanan:*\n${itemListText}\n\n*Subtotal:* Rp ${subtotalAmount.toLocaleString("id-ID")}\n*Diskon:* Rp ${discountAmount.toLocaleString("id-ID")}\n*Total Tagihan:* Rp ${totalAmount.toLocaleString("id-ID")}\n\nMohon informasi pembayaran dan konfirmasi pesanan. Terima kasih.`;
 
     const whatsappUrl = `https://wa.me/${targetWa}?text=${encodeURIComponent(message)}`;
 
