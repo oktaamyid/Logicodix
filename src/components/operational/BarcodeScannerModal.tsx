@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useEffect, useId, useRef, useState } from "react";
-import { Camera, RefreshCw, X, AlertCircle, CheckCircle2, ScanLine } from "lucide-react";
+import {
+  Camera,
+  RefreshCw,
+  X,
+  AlertCircle,
+  CheckCircle2,
+  ScanLine,
+  Zap,
+  ZapOff,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface BarcodeScannerModalProps {
@@ -19,8 +28,13 @@ interface CameraDevice {
 }
 
 /**
- * Modal pemindai barcode (EAN-13, UPC, Code-128) dan QR code berbasis kamera browser.
- * Berjalan 100% di sisi klien menggunakan html5-qrcode tanpa dependensi server.
+ * Modal pemindai barcode (EAN-13, EAN-8, UPC, Code-128, Code-39) dan QR code berbasis kamera browser.
+ * Dioptimalkan dengan:
+ * - Formats eksplisit retail barcode & QR
+ * - Hardware BarcodeDetector native jika didukung browser (kecepatan & akurasi tinggi)
+ * - Resolusi HD (1280x720) dengan focusMode continuous
+ * - Dynamic QR box 75% lebar viewfinder untuk kemudahan bidik
+ * - Dukungan senter (torch / flashlight) jika perangkat mendukung
  */
 export function BarcodeScannerModal({
   isOpen,
@@ -39,12 +53,16 @@ export function BarcodeScannerModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastScanned, setLastScanned] = useState<string | null>(null);
   const [flashSuccess, setFlashSuccess] = useState<boolean>(false);
+  const [torchSupported, setTorchSupported] = useState<boolean>(false);
+  const [isTorchOn, setIsTorchOn] = useState<boolean>(false);
 
   const onScanSuccessRef = useRef(onScanSuccess);
   const onCloseRef = useRef(onClose);
   const lastScanTimeRef = useRef<number>(0);
   const lastScanCodeRef = useRef<string>("");
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const scannerInstanceRef = useRef<any>(null);
 
   useEffect(() => {
     onScanSuccessRef.current = onScanSuccess;
@@ -80,12 +98,12 @@ export function BarcodeScannerModal({
       setErrorMessage(null);
       setLastScanned(null);
       setFlashSuccess(false);
+      setTorchSupported(false);
+      setIsTorchOn(false);
       return;
     }
 
     let isCancelled = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let scannerInstance: any = null;
 
     const startScanner = async () => {
       setIsStarting(true);
@@ -103,14 +121,13 @@ export function BarcodeScannerModal({
           );
         }
 
-        const { Html5Qrcode } = await import("html5-qrcode");
+        const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import("html5-qrcode");
         if (isCancelled) return;
 
         // Ambil daftar kamera yang tersedia
-        let availableCameras: CameraDevice[] = [];
         try {
           const devices = await Html5Qrcode.getCameras();
-          availableCameras = devices.map((d, idx) => ({
+          const availableCameras = devices.map((d, idx) => ({
             id: d.id,
             label: d.label || `Kamera ${idx + 1}`,
           }));
@@ -118,23 +135,58 @@ export function BarcodeScannerModal({
             setCameras(availableCameras);
           }
         } catch {
-          // Lanjutkan dengan facingMode environment jika enumerasi gagal
+          // Lanjutkan jika enumerasi kamera tidak didukung
         }
 
         if (isCancelled) return;
 
-        scannerInstance = new Html5Qrcode(readerId);
+        // Inisialisasi scanner dengan format retail barcode lengkap & native BarcodeDetector
+        const supportedFormats = [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.QR_CODE,
+          Html5QrcodeSupportedFormats.DATA_MATRIX,
+        ];
 
-        const cameraConfig: string | { facingMode: string } = selectedCameraId
-          ? selectedCameraId
-          : { facingMode: "environment" };
+        const scanner = new Html5Qrcode(readerId, {
+          formatsToSupport: supportedFormats,
+          useBarCodeDetectorIfSupported: true,
+          verbose: false,
+        });
+        scannerInstanceRef.current = scanner;
 
-        await scannerInstance.start(
+        // Konfigurasi target kamera dengan preferensi resolusi HD & fokus otomatis
+        const cameraConfig = selectedCameraId
+          ? {
+              deviceId: { exact: selectedCameraId },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              focusMode: "continuous",
+            }
+          : {
+              facingMode: "environment",
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              focusMode: "continuous",
+            };
+
+        await scanner.start(
           cameraConfig,
           {
-            fps: 10,
-            qrbox: { width: 260, height: 150 },
+            fps: 15,
+            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+              // Kotak bidik responsif: 75% lebar viewfinder agar barcode panjang mudah masuk
+              const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+              const boxWidth = Math.max(220, Math.floor(viewfinderWidth * 0.75));
+              const boxHeight = Math.max(140, Math.floor(minEdge * 0.5));
+              return { width: boxWidth, height: boxHeight };
+            },
             aspectRatio: 1.333334,
+            disableFlip: false,
           },
           (decodedText: string) => {
             const cleanCode = decodedText.trim();
@@ -151,7 +203,7 @@ export function BarcodeScannerModal({
             lastScanCodeRef.current = cleanCode;
             lastScanTimeRef.current = now;
 
-            // Trigger indikator hijau sukses scan
+            // Trigger indikator visual sukses scan
             setLastScanned(cleanCode);
             setFlashSuccess(true);
             if (flashTimerRef.current) {
@@ -168,16 +220,27 @@ export function BarcodeScannerModal({
             }
           },
           () => {
-            // Abaikan error frame individual saat kamera mencari barcode
+            // Abaikan error individual per frame saat mencari barcode
           }
         );
 
-        if (isCancelled && scannerInstance) {
+        // Periksa apakah perangkat mendukung senter (torch)
+        try {
+          const capabilities = scanner.getRunningTrackCameraCapabilities();
+          const torchFeature = capabilities?.torchFeature();
+          if (torchFeature && torchFeature.isSupported()) {
+            setTorchSupported(true);
+          }
+        } catch {
+          setTorchSupported(false);
+        }
+
+        if (isCancelled && scanner) {
           try {
-            if (scannerInstance.isScanning) {
-              await scannerInstance.stop();
+            if (scanner.isScanning) {
+              await scanner.stop();
             }
-            scannerInstance.clear();
+            scanner.clear();
           } catch {
             // Abaikan error cleanup
           }
@@ -215,13 +278,15 @@ export function BarcodeScannerModal({
 
     return () => {
       isCancelled = true;
-      if (scannerInstance) {
+      const scanner = scannerInstanceRef.current;
+      if (scanner) {
         Promise.resolve()
           .then(async () => {
-            if (scannerInstance.isScanning) {
-              await scannerInstance.stop();
+            if (scanner.isScanning) {
+              await scanner.stop();
             }
-            scannerInstance.clear();
+            scanner.clear();
+            scannerInstanceRef.current = null;
           })
           .catch(() => {
             // Abaikan error saat menutup kamera
@@ -237,6 +302,22 @@ export function BarcodeScannerModal({
     const currentIndex = cameras.findIndex((c) => c.id === selectedCameraId);
     const nextIndex = (currentIndex + 1) % cameras.length;
     setSelectedCameraId(cameras[nextIndex].id);
+  };
+
+  const handleToggleTorch = async () => {
+    const scanner = scannerInstanceRef.current;
+    if (!scanner) return;
+    try {
+      const capabilities = scanner.getRunningTrackCameraCapabilities();
+      const torch = capabilities?.torchFeature();
+      if (torch && torch.isSupported()) {
+        const nextState = !isTorchOn;
+        await torch.apply(nextState);
+        setIsTorchOn(nextState);
+      }
+    } catch {
+      // Abaikan jika tidak didukung browser saat ini
+    }
   };
 
   return (
@@ -272,7 +353,7 @@ export function BarcodeScannerModal({
         <div className="px-4 py-2 bg-muted/40 border-b flex items-center gap-2 text-xs text-muted-foreground">
           <ScanLine className="h-4 w-4 text-emerald-700 shrink-0" />
           <span>
-            Posisikan garis merah atau barcode tepat di dalam kotak tengah pemindai.
+            Posisikan barcode atau QR di dalam kotak bidik. Pastikan pencahayaan cukup dan gambar tidak goyang.
           </span>
         </div>
 
@@ -297,7 +378,7 @@ export function BarcodeScannerModal({
             {isStarting && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 text-white gap-2 p-4 text-center z-10">
                 <RefreshCw className="h-6 w-6 animate-spin text-emerald-400" />
-                <p className="text-xs font-medium">Menyiapkan kamera...</p>
+                <p className="text-xs font-medium">Menyiapkan kamera HD...</p>
               </div>
             )}
 
@@ -341,27 +422,47 @@ export function BarcodeScannerModal({
 
           {/* Controls */}
           <div className="flex items-center justify-between gap-2 pt-1">
-            {cameras.length > 1 ? (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCycleCamera}
-                className="min-h-[44px] gap-1.5 text-xs"
-              >
-                <RefreshCw className="h-4 w-4" />
-                <span>Ganti Kamera ({cameras.length})</span>
-              </Button>
-            ) : (
-              <span className="text-[11px] text-muted-foreground">
-                Mendukung EAN-13, UPC, Code-128, dan QR.
-              </span>
-            )}
+            <div className="flex items-center gap-1.5">
+              {cameras.length > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCycleCamera}
+                  className="min-h-[44px] gap-1.5 text-xs"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  <span>Kamera ({cameras.length})</span>
+                </Button>
+              )}
+
+              {torchSupported && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleToggleTorch}
+                  className="min-h-[44px] gap-1.5 text-xs"
+                  title={isTorchOn ? "Matikan Lampu Senter" : "Nyalakan Lampu Senter"}
+                >
+                  {isTorchOn ? (
+                    <>
+                      <ZapOff className="h-4 w-4 text-amber-500" />
+                      <span>Senter Mati</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="h-4 w-4 text-muted-foreground" />
+                      <span>Senter</span>
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
 
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
-              className="min-h-[44px] px-5 text-xs font-semibold"
+              className="min-h-[44px] px-5 text-xs font-semibold ml-auto"
             >
               Selesai
             </Button>

@@ -182,7 +182,7 @@ export function StoreSettingsView({ initialData }: StoreSettingsViewProps) {
   const roleMeta = ROLE_LABELS[currentUserRole];
 
   return (
-    <div className="space-y-8 max-w-6xl">
+    <div className="space-y-8 w-full">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-5">
         <div>
